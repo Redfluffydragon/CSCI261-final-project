@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "Crop.h"
+#include "PNGChunk.h"
 
 using namespace std;
 
@@ -23,10 +24,16 @@ private:
   int width; // The width in pixels
   double rotation; // The current rotation
   Crop currentCrop; // The current crop
+  vector<uint8_t> buffer;
   vector<Color> image1; // A 2d vector holding a version of the current image
   vector<vector <Color>> image2; // A vector holding the other version of the current image
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
+
+  PNGChunk findChunk(int);
+
+  int fourBytesInt(int);
+  string fourBytesString(int);
 public:
   EditImage(const string &);
   EditImage();

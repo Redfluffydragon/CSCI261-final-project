@@ -39,7 +39,7 @@ bool EditImage::read() {
   // read the image
 
   // declare ifstream object and open the file
-  ifstream imageFile(filename, std::ios::binary);
+  ifstream imageFile(filename, ios_base::binary);
   
   // check for an error
   if ( imageFile.fail() ) {
@@ -82,15 +82,25 @@ bool EditImage::read() {
     }
   }
   else if (EditImage::fileType == "png") {
-      // read the image
+    // read the image
 
-      // Read in header
-      for (int i = 0; i < 8; i++) {
-        if (imageFile >> EditImage::header[i]) {
-          cout << +EditImage::header[i] << " ";
-        }
-      }
+    EditImage::buffer = vector<uint8_t>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
+    for (int i = 0; i < 8; i++) {
+      cout << (int)buffer.at(i) << " ";
+    }
+
+    PNGChunk IDHR = EditImage::findChunk(8);
+
+    EditImage::width = fourBytesInt(IDHR.start);
+    EditImage::height = fourBytesInt(IDHR.start + 4);
+
+    PNGChunk IDAT = findChunk(IDHR.end + 4);
+
+    while (IDAT.type != "IDAT") {
+      IDAT = findChunk(IDAT.end + 4);
+    }
+    cout << endl << IDAT.type << " " << IDAT.start << " " << IDAT.length;
   }
 
   // close the file
@@ -100,6 +110,34 @@ bool EditImage::read() {
   EditImage::makeSprite();
 
   return true;
+}
+
+int EditImage::fourBytesInt(int start) {
+  int sum = 0;
+  for (int i = start; i < start + 4; i++) {
+    sum += (int)EditImage::buffer.at(i);
+  }
+  return sum;
+}
+
+string EditImage::fourBytesString(int start) {
+  string stringSum = "";
+  for (int i = start; i < start + 4; i++) {
+    stringSum += EditImage::buffer.at(i);
+  }
+  return stringSum;
+}
+
+PNGChunk EditImage::findChunk(int start) {
+  // Read in size of chunk
+  int size = fourBytesInt(start);
+
+  // Read in type of chunk
+  string chunkType = fourBytesString(start + 4);
+
+  string crc = fourBytesString(start + 8 + size);
+
+  return PNGChunk{chunkType, size, start + 8, start + 8 + size, crc};
 }
 
 void EditImage::makeSprite() {
@@ -132,8 +170,6 @@ void EditImage::makeSprite() {
 
   EditImage::sprite.setTexture(EditImage::texture);
 
-
-  
 }
 
 void EditImage::draw(RenderWindow &window) {
