@@ -1,10 +1,11 @@
-#include "EditImage.h"
-#include "Crop.h"
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include "math.h"
+#include "EditImage.h" // Header file for this class
+#include "Crop.h" // Custom crop struct
+#include <string> // For strings
+#include <fstream> // For reading a writing to files
+#include <iostream> // For cin, cout
+#include <vector> // For vectors
+#include "math.h" // For pow
+#include "upng.h" // For PNG decoding
 
 using namespace std;
 
@@ -82,18 +83,24 @@ bool EditImage::read() {
   else if (EditImage::fileType == "png") {
     // read the image
 
+    // https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
     EditImage::buffer = vector<uint8_t>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
-    PNGChunk IDHR = EditImage::findChunk(8);
+    // Create a pointer to the byte array behind the buffer - https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array
+    unsigned char* tempCharArray = &EditImage::buffer[0];
 
-    EditImage::width = fourBytesInt(IDHR.start);
-    EditImage::height = fourBytesInt(IDHR.start + 4);
+    // Create a upng instance and pass the byte array to the upng instance
+    upng_t* upng = upng_new_from_bytes(tempCharArray, (unsigned long)buffer.size());
 
-    PNGChunk IDAT = findChunk(IDHR.end + 4);
+    upng_decode(upng);
 
-    while (IDAT.type != "IDAT") {
-      IDAT = findChunk(IDAT.end + 4);
-    }
+    EditImage::width = upng_get_width(upng); // Returns width of image in pixels
+    EditImage::height = upng_get_height(upng); // Returns height of image in pixels
+
+    const unsigned char* getBuffer = upng_get_buffer(upng);
+
+    // EditImage::image1 = vector<unsigned char>(getBuffer);
+
   }
 
   // close the file
@@ -146,11 +153,11 @@ void EditImage::makeSprite() {
     Image tempImage;
     tempImage.create(EditImage::width, EditImage::height);
 
-    for (int i = 0; i < EditImage::width; i++) {
+    /* for (int i = 0; i < EditImage::width; i++) {
       for (int j = 0; j < EditImage::height; j++) {
         tempImage.setPixel(i, j, EditImage::image1.at((i * EditImage::width) + j));
       }
-    }
+    } */
 
     // Create texture
     EditImage::texture = Texture();

@@ -6,6 +6,7 @@
 #include <vector>
 #include "Crop.h"
 #include "PNGChunk.h"
+#include "upng.h" // For PNG decoding
 
 using namespace std;
 
@@ -16,17 +17,18 @@ using namespace sf;
 class EditImage
 {
 private:
-  string fileType;
-  uint8_t header[8];
-  string filename;
-  string format;
+  string filename; // The name of the file to open
+  string fileType; //  The image file extension
+
   int height; // The height in pixels
   int width; // The width in pixels
   double rotation; // The current rotation
   Crop currentCrop; // The current crop
+
   vector<uint8_t> buffer;
-  vector<Color> image1; // A 2d vector holding a version of the current image
-  vector<vector <Color>> image2; // A vector holding the other version of the current image
+  vector<unsigned char> image1; // A vector holding a version of the current image
+  vector<unsigned char> image2; // A vector holding the other version of the current image
+
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
 
