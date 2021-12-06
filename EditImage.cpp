@@ -22,7 +22,8 @@ EditImage::EditImage(const string &inputFilename) {
 
 EditImage::EditImage() {
   // getFilename();
-  filename = "data/wallpaper.ppm";
+  // filename = "data/wallpaper.ppm";
+  filename = "data/pack_icon.png";
   
   if (!EditImage::read()) {
     cout << "Failed to open file";
@@ -38,7 +39,7 @@ bool EditImage::read() {
   // read the image
 
   // declare ifstream object and open the file
-  ifstream imageFile(filename);
+  ifstream imageFile(filename, std::ios::binary);
   
   // check for an error
   if ( imageFile.fail() ) {
@@ -46,10 +47,10 @@ bool EditImage::read() {
   }
   cout << "Opened file" << endl;
 
-  string fileType = filename.substr(filename.find(".") + 1, filename.size() - 1);
-  cout << fileType;
+  EditImage::fileType = filename.substr(filename.find(".") + 1, filename.size() - 1);
+  cout << fileType << endl;
 
-  if (fileType == "ppm") {
+  if (EditImage::fileType == "ppm") {
     string imageType; // To read the type of image from the image file
     int maxValue; // To read the other header data
 
@@ -80,11 +81,20 @@ bool EditImage::read() {
       }
     }
   }
-  else if (fileType == "png") {
+  else if (EditImage::fileType == "png") {
+      // read the image
 
-    
+      // Read in header
+      for (int i = 0; i < 8; i++) {
+        if (imageFile >> EditImage::header[i]) {
+          cout << +EditImage::header[i] << " ";
+        }
+      }
+
   }
-  
+
+  // close the file
+  imageFile.close();
 
   // Now make a sprite to display the image
   EditImage::makeSprite();
@@ -93,31 +103,37 @@ bool EditImage::read() {
 }
 
 void EditImage::makeSprite() {
-  Image tempImage;
-  tempImage.create(EditImage::width, EditImage::height);
-
-  for (int i = 0; i < EditImage::width; i++) {
-    for (int j = 0; j < EditImage::height; j++) {
-      tempImage.setPixel(i, j, EditImage::image1.at((i * EditImage::width) + j));
-    }
-  }
 
   EditImage::sprite = Sprite();
 
   /* EditImage::sprite.setOrigin(EditImage::width / 2, EditImage::height / 2);
-  EditImage::sprite.setPosition(320, 320); */
+  EditImage::sprite.setPosition(320, 150); */
 
-  // Create texture
-  EditImage::texture = Texture();
-  EditImage::texture.create(EditImage::width, EditImage::height);
+  if (EditImage::fileType == "ppm") {
+    Image tempImage;
+    tempImage.create(EditImage::width, EditImage::height);
+
+    for (int i = 0; i < EditImage::width; i++) {
+      for (int j = 0; j < EditImage::height; j++) {
+        tempImage.setPixel(i, j, EditImage::image1.at((i * EditImage::width) + j));
+      }
+    }
+
+    // Create texture
+    EditImage::texture = Texture();
+    EditImage::texture.create(EditImage::width, EditImage::height);
+
+    EditImage::texture.loadFromImage(tempImage);
+  }
+  else {
+    EditImage::texture.loadFromFile(EditImage::filename);
+  }
+
+
+  EditImage::sprite.setTexture(EditImage::texture);
+
 
   
-  // Uint8* pixels = new Uint8[EditImage::width * EditImage::height * 4];
-  
-  EditImage::texture.loadFromImage(tempImage);
-
-  EditImage::sprite.setTexture(EditImage::texture, true);
-
 }
 
 void EditImage::draw(RenderWindow &window) {
