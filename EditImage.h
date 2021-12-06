@@ -15,7 +15,8 @@ using namespace sf;
 class EditImage
 {
 private:
-  int header[8];
+  string fileType;
+  uint8_t header[8];
   string filename;
   string format;
   int height; // The height in pixels
