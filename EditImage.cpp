@@ -72,9 +72,6 @@ bool EditImage::read() {
     for (int i = 0; i < EditImage::width; i++) {
       for (int j = 0; j < EditImage::height; j++) {
         imageFile >> red >> green >> blue;
-        if (i == 0) {
-          cout << red << " " << green << " " << blue << " " << endl;
-        }
         EditImage::image1.emplace_back(red, green, blue);
         /* EditImage::image1.push_back(green);
         EditImage::image1.push_back(blue);
@@ -87,23 +84,16 @@ bool EditImage::read() {
 
     EditImage::buffer = vector<uint8_t>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
-    for (int i = 0; i < 8; i++) {
-      cout << (int)buffer.at(i) << " ";
-    }
-
     PNGChunk IDHR = EditImage::findChunk(8);
 
     EditImage::width = fourBytesInt(IDHR.start);
     EditImage::height = fourBytesInt(IDHR.start + 4);
 
     PNGChunk IDAT = findChunk(IDHR.end + 4);
-    cout << "Length: " << IDAT.length << endl;
 
     while (IDAT.type != "IDAT") {
       IDAT = findChunk(IDAT.end + 4);
-      cout << "Length: " << IDAT.length << endl;
     }
-    cout << endl << IDAT.type << " " << IDAT.start << " " << IDAT.length;
   }
 
   // close the file
@@ -117,11 +107,9 @@ bool EditImage::read() {
 
 // Convert a hex number spread over four bytes into an unsigned int
 unsigned int EditImage::fourBytesInt(unsigned int start) {
-  cout << endl << "Start: " << start << endl;
   unsigned int sum = 0;
   for (int i = start; i < start + 4; i++) {
     sum += (int)EditImage::buffer.at(i) * pow(16, (6 - 2 * (i - start)));
-    cout << i << " Sum: " << sum << endl;
   }
 
   return sum;
