@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include "math.h"
 
 using namespace std;
 
@@ -96,9 +97,11 @@ bool EditImage::read() {
     EditImage::height = fourBytesInt(IDHR.start + 4);
 
     PNGChunk IDAT = findChunk(IDHR.end + 4);
+    cout << "Length: " << IDAT.length << endl;
 
     while (IDAT.type != "IDAT") {
       IDAT = findChunk(IDAT.end + 4);
+      cout << "Length: " << IDAT.length << endl;
     }
     cout << endl << IDAT.type << " " << IDAT.start << " " << IDAT.length;
   }
@@ -112,15 +115,19 @@ bool EditImage::read() {
   return true;
 }
 
-int EditImage::fourBytesInt(int start) {
-  int sum = 0;
+// Convert a hex number spread over four bytes into an unsigned int
+unsigned int EditImage::fourBytesInt(unsigned int start) {
+  cout << endl << "Start: " << start << endl;
+  unsigned int sum = 0;
   for (int i = start; i < start + 4; i++) {
-    sum += (int)EditImage::buffer.at(i);
+    sum += (int)EditImage::buffer.at(i) * pow(16, (6 - 2 * (i - start)));
+    cout << i << " Sum: " << sum << endl;
   }
+
   return sum;
 }
 
-string EditImage::fourBytesString(int start) {
+string EditImage::fourBytesString(unsigned int start) {
   string stringSum = "";
   for (int i = start; i < start + 4; i++) {
     stringSum += EditImage::buffer.at(i);
@@ -128,9 +135,9 @@ string EditImage::fourBytesString(int start) {
   return stringSum;
 }
 
-PNGChunk EditImage::findChunk(int start) {
+PNGChunk EditImage::findChunk(unsigned int start) {
   // Read in size of chunk
-  int size = fourBytesInt(start);
+  unsigned int size = fourBytesInt(start);
 
   // Read in type of chunk
   string chunkType = fourBytesString(start + 4);

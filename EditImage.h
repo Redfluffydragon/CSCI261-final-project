@@ -30,10 +30,10 @@ private:
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
 
-  PNGChunk findChunk(int);
+  PNGChunk findChunk(unsigned int);
 
-  int fourBytesInt(int);
-  string fourBytesString(int);
+  unsigned int fourBytesInt(unsigned int);
+  string fourBytesString(unsigned int);
 public:
   EditImage(const string &);
   EditImage();

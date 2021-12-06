@@ -9,9 +9,9 @@ using namespace std;
 struct PNGChunk
 {
   string type;
-  int length;
-  int start;
-  int end;
+  unsigned int length;
+  unsigned int start;
+  unsigned int end;
   string crc;
 };
 
