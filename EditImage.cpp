@@ -118,7 +118,10 @@ bool EditImage::readFile() {
     upng_decode(upng);
 
     // EditImage::header = upng_header(upng); // Get the image header
+    EditImage::originalWidth = upng_get_width(upng); // Returns width of image in pixels
     EditImage::width = upng_get_width(upng); // Returns width of image in pixels
+
+    EditImage::originalHeight = upng_get_height(upng); // Returns height of image in pixels
     EditImage::height = upng_get_height(upng); // Returns height of image in pixels
 
     // Temporary buffer
@@ -128,14 +131,15 @@ bool EditImage::readFile() {
 
     // Transfer into a vector so that way it can be a member of the object
     // https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
-    EditImage::read.insert(EditImage::read.end(), &getBuffer[0], &getBuffer[EditImage::size]);
+    EditImage::original.insert(EditImage::original.end(), &getBuffer[0], &getBuffer[EditImage::size]);
 
-    // Also transfer into the write vector so it's the right size
+
+    // Also transfer into the read and write vectors so they're the right size
     EditImage::write.insert(EditImage::write.end(), &getBuffer[0], &getBuffer[EditImage::size]);
+    EditImage::read.insert(EditImage::read.end(), &getBuffer[0], &getBuffer[EditImage::size]);
 
     // Now that it's in a vector we don't need the char array anymore, so free it from memory
     upng_free(upng);
-
   }
 
   // close the file
@@ -208,24 +212,22 @@ void EditImage::setRotation(const float &degrees) {
 
 // Actually move pixels around to rotate the image 90 degrees
 void EditImage::rotate90() {
-
-  // Get the new width and new height for calculating pixel position
-  unsigned int newWidth = EditImage::height;
-  unsigned int newHeight = EditImage::width;
+  cout << "Rotate90" << endl;
 
   for (unsigned int y = 0; y < EditImage::height; y++) {
     for (unsigned int x = 0; x < EditImage::width; x++) {
       // THIS WORKED THE FIRST TRY!!!!!!!!!!!!!!!! (On a square image)
       EditImage::writePixel(
         4 * (y * EditImage::width + x),
-        4 * (newWidth - y - 1 + newWidth * x)
+        4 * (EditImage::height - y - 1 + EditImage::height * x)
       );
     }
   }
 
-  // Swap the actual width and height
-  EditImage::height = newHeight;
-  EditImage::width = newWidth;
+  // Swap the width and height
+  unsigned int temp = EditImage::height;
+  EditImage::height = EditImage::width;
+  EditImage::width = temp;
   
   // Set the read vector equal to the write vector so we can work on the newly modified image
   EditImage::read = EditImage::write;
@@ -234,7 +236,7 @@ void EditImage::rotate90() {
 // Move pixels and calculate the rotation of the image
 void EditImage::calcRotate() {
   if ((int)EditImage::rotation % 90 == 0) {
-    for (int i = 0; i < (((int(EditImage::rotation - EditImage::saveRotation) % 360) / 90) + 4) % 4; i++) {
+    for (int i = 0; i < (int)EditImage::rotation / 90; i++) {
       EditImage::rotate90();
     }
   }
@@ -246,38 +248,45 @@ void EditImage::calcRotate() {
     }
   }
 
-  EditImage::saveRotation = EditImage::rotation;
-
   // Set the read vector equal to the write vector so we can work on the newly modified image
   EditImage::read = EditImage::write;
 }
 
 // Flip the image vertically or horizontally
 void EditImage::flip(const string &direction) {
-  // Flip horizontally
+  // Mark as flipped horizontally
   if (direction == "h") {
-    for (unsigned int y = 0; y < EditImage::height; y++) {
-      for (unsigned int x = 0; x < EditImage::width; x++) {
-        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * (y * EditImage::width + (EditImage::width - x - 1)));
-      }
-    }
     EditImage::flipState[0] = EditImage::flipState[0] == 1 ? -1 : 1;
   }
-  // Flip vertically
+  // Mark as flipped vertically
   else if (direction == "v") {
-    for (unsigned int y = 0; y < EditImage::height; y++) {
-      for (unsigned int x = 0; x < EditImage::width; x++) {
-        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * ((EditImage::height - y - 1) * EditImage::width + x));
-      }
-    }
     EditImage::flipState[1] = EditImage::flipState[1] == 1 ? -1 : 1;
   }
 
   // Use scale to mirror the displayed image appropriately
   EditImage::sprite.setScale(EditImage::flipState[0], EditImage::flipState[1]);
+}
 
-  // Set the read vector equal to the write vector so we can work on the newly modified image
-  EditImage::read = EditImage::write;
+// Actually do the flipping based on flipstate
+void EditImage::calcFlip() {
+  if (EditImage::flipState[0] == -1) {
+    for (unsigned int y = 0; y < EditImage::height; y++) {
+      for (unsigned int x = 0; x < EditImage::width; x++) {
+        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * (y * EditImage::width + (EditImage::width - x - 1)));
+      }
+    }
+    // Set the read vector equal to the write vector so we can work on the newly modified image
+    EditImage::read = EditImage::write;
+  }
+  if (EditImage::flipState[1] == -1) {
+    for (unsigned int y = 0; y < EditImage::height; y++) {
+      for (unsigned int x = 0; x < EditImage::width; x++) {
+        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * ((EditImage::height - y - 1) * EditImage::width + x));
+      }
+    }
+    // Set the read vector equal to the write vector so we can work on the newly modified image
+    EditImage::read = EditImage::write;
+  }
 }
 
 // Crop the image
@@ -289,7 +298,18 @@ void EditImage::crop(Crop newCrop) {
 
 // Save the image to file
 bool EditImage::save(string newFilename) {
+  EditImage::message.setString("Saving...");
+
   //Only actually move the pixels when saving
+
+  // Reset everything to the original image
+  EditImage::read = EditImage::original;
+  EditImage::write = EditImage::original;
+  EditImage::width = EditImage::originalWidth;
+  EditImage::height = EditImage::originalHeight;
+
+  // Then do transforms
+  EditImage::calcFlip();
   EditImage::calcRotate();
 
   if (newFilename.empty()) {
@@ -325,8 +345,7 @@ bool EditImage::save(string newFilename) {
   }
 
   fclose(EditImage::newImage);
-
-  // EditImage::message.setString("Saved!");
+  cout << "Saved!" << endl;
 
   return true;
 }

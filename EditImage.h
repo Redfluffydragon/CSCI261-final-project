@@ -27,12 +27,14 @@ private:
   unsigned int size; // The size of the pixel array
 
   double rotation = 0.0; // The current rotation
-  double saveRotation = 0.0; // The rotation that was last saved
   Crop currentCrop; // The current crop
   int flipState[2] = {1, 1}; // The current horizontal and vertical flip
 
   vector<unsigned char> buffer; // To get the image data to pass to upng
 
+  unsigned int originalHeight;
+  unsigned int originalWidth;
+  vector<unsigned char> original; // A vector that always holds the original image
   vector<unsigned char> read; // A vector holding a version of the current image to read from
   vector<unsigned char> write; // A vector to write the edited image to 
 
@@ -50,6 +52,8 @@ private:
   void updateRText();
   void makeSprite();
 
+  void calcRotate();
+  void calcFlip();
 public:
   EditImage(const string &);
   EditImage();
@@ -58,7 +62,6 @@ public:
   void draw(RenderWindow &window);
   void rotate(const float &degrees);
   void setRotation(const float &degrees);
-  void calcRotate();
   void flip(const string &);
   void crop(Crop newCrop);
   bool save(string);
