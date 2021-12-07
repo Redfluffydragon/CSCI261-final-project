@@ -22,6 +22,11 @@ int main() {
 
     EditImage image; // Automatically gets file name and reads in the file and makes a sprite
 
+    // Whether or not the R key is pressed, for rotating the image
+    bool rDown = false;
+
+    // The starting point of the mouse to calculate rotation
+    Vector2i startingPoint;
 
     RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
 
@@ -52,11 +57,36 @@ int main() {
                 // i.e. they clicked the X on the window
                 window.close();                 // then close our window
             }
+            else if ( event.type == Event::MouseButtonPressed ) {
+
+            }
+            else if ( event.type == Event::MouseMoved && rDown ) {
+              image.rotate(float(Mouse::getPosition().x - startingPoint.x) / 3);
+              startingPoint = Mouse::getPosition();
+            }
             else if ( event.type == Event::MouseButtonReleased ) {
 
             }
-            else if ( event.type == Event::KeyPressed && event.key.code == Keyboard::D ) {
-
+            else if ( event.type == Event::KeyPressed) {
+              if (event.key.code == Keyboard::H) {
+                image.flip("h");
+              }
+              else if (event.key.code == Keyboard::V) {
+                image.flip("v");
+              }
+              else if (event.key.code == Keyboard::S) {
+                image.save("");
+              }
+              else if (event.key.code == Keyboard::R) {
+                startingPoint = Mouse::getPosition();
+                rDown = true;
+              }
+            }
+            else if (event.type == Event::KeyReleased) {
+              if (event.key.code == Keyboard::R) {
+                rDown = false;
+                image.calcRotate();
+              }
             }
         }
     }

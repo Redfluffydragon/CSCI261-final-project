@@ -30,6 +30,21 @@ EditImage::EditImage() {
   if (!EditImage::readFile()) {
     cout << "Failed to open file";
   }
+
+  // Set up GUI elements
+  EditImage::font.loadFromFile("data/arial.ttf");
+
+  EditImage::updateRText();
+  EditImage::rotationText.setFillColor(Color::Black);
+  EditImage::rotationText.setFont(EditImage::font);
+  // EditImage::rotationText.setPosition()
+}
+
+void EditImage::writePixel(unsigned int from, unsigned int to) {
+  EditImage::write.at(to) = EditImage::read.at(from);
+  EditImage::write.at(to + 1) = EditImage::read.at(from + 1);
+  EditImage::write.at(to + 2) = EditImage::read.at(from + 2);
+  EditImage::write.at(to + 3) = EditImage::read.at(from + 3);
 }
 
 void EditImage::getFilename() {
@@ -47,10 +62,9 @@ bool EditImage::readFile() {
   if ( imageFile.fail() ) {
     return false;
   }
-  cout << "Opened file" << endl;
 
   EditImage::fileType = filename.substr(filename.find(".") + 1, filename.size() - 1);
-  cout << fileType << endl;
+  cout << "Opened " << fileType << " file" << endl;
 
   if (EditImage::fileType == "ppm") {
     string imageType; // To read the type of image from the image file
@@ -108,6 +122,9 @@ bool EditImage::readFile() {
     // https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
     EditImage::read.insert(EditImage::read.end(), &getBuffer[0], &getBuffer[EditImage::size]);
 
+    // Also transfer into the write vector so it's the right size
+    EditImage::write.insert(EditImage::write.end(), &getBuffer[0], &getBuffer[EditImage::size]);
+
     // Now that it's in a vector we don't need the char array anymore, so free it from memory
     upng_free(upng);
 
@@ -122,12 +139,16 @@ bool EditImage::readFile() {
   return true;
 }
 
+void EditImage::updateRText() {
+  EditImage::rotationText.setString("Rotation: " + to_string(EditImage::rotation) + char(176));
+}
+
 void EditImage::makeSprite() {
 
   EditImage::sprite = Sprite();
 
-  /* EditImage::sprite.setOrigin(EditImage::width / 2, EditImage::height / 2);
-  EditImage::sprite.setPosition(320, 150); */
+  EditImage::sprite.setOrigin(EditImage::width / 2, EditImage::height / 2);
+  EditImage::sprite.setPosition(320, 150);
 
   if (EditImage::fileType == "ppm") {
     Image tempImage;
@@ -156,11 +177,21 @@ void EditImage::makeSprite() {
 
 void EditImage::draw(RenderWindow &window) {
   window.draw(EditImage::sprite);
+  window.draw(EditImage::rotationText);
+
 }
 
-void EditImage::rotate(const double &degrees)  {
-  for (int i = 0; i < EditImage::size; i += 4) {
+void EditImage::rotate(const float &degrees)  {
+  EditImage::sprite.rotate(degrees);
+  EditImage::rotation = EditImage::sprite.getRotation();
+  EditImage::updateRText();
+}
 
+void EditImage::calcRotate() {
+  for (unsigned int y = 0; y < EditImage::height; y++) {
+    for (unsigned int x = 0; x < EditImage::width; x++) {
+      EditImage::writePixel(4 * (y * EditImage::width + x), sin(x));
+    }
   }
 
   // Set the read vector equal to the write vector so we can work on the newly modified image
@@ -169,24 +200,26 @@ void EditImage::rotate(const double &degrees)  {
 
 void EditImage::flip(const string &direction) {
 
-  
+  // Flip horizontally
   if (direction == "h") {
-    for (unsigned int y = 0; y < EditImage::height * 4; y += 4) {
-      for (unsigned int x = 0; x < EditImage::width * 4; x += 4) {
-        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x )) = EditImage::read.at(y * EditImage::width * 4 + x);
-        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x + 1)) = EditImage::read.at(y * EditImage::width * 4 + x + 1);
-        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x + 2)) = EditImage::read.at(y * EditImage::width * 4 + x + 2);
-        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x + 3)) = EditImage::read.at(y * EditImage::width * 4 + x + 3);
+    for (unsigned int y = 0; y < EditImage::height; y++) {
+      for (unsigned int x = 0; x < EditImage::width; x++) {
+        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * (y * EditImage::width + (EditImage::width - x - 1)));
       }
     }
+    EditImage::flipState[0] = EditImage::flipState[0] == 1 ? -1 : 1;
   }
+  // Flip vertically
   else if (direction == "v") {
-    for (unsigned int y = 0; y < EditImage::height * 4; y += 4) {
-      for (unsigned int x = 0; x < EditImage::width * 4; x += 4) {
-        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x)) = EditImage::read.at(y * EditImage::width * 4 + x);
+    for (unsigned int y = 0; y < EditImage::height; y++) {
+      for (unsigned int x = 0; x < EditImage::width; x++) {
+        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * ((EditImage::height - y - 1) * EditImage::width + x));
       }
     }
+    EditImage::flipState[1] = EditImage::flipState[1] == 1 ? -1 : 1;
   }
+
+  EditImage::sprite.setScale(EditImage::flipState[0], EditImage::flipState[1]);
 
   // Set the read vector equal to the write vector so we can work on the newly modified image
   EditImage::read = EditImage::write;

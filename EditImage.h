@@ -26,8 +26,9 @@ private:
   unsigned int width; // The width in pixels
   unsigned int size; // The size of the pixel array
 
-  double rotation; // The current rotation
+  double rotation = 0.0; // The current rotation
   Crop currentCrop; // The current crop
+  int flipState[2] = {1, 1}; // The current horizontal and vertical flip
 
   vector<uint8_t> buffer; // To get the image data to pass to upng
 
@@ -37,18 +38,20 @@ private:
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
 
-  PNGChunk findChunk(unsigned int);
+  Text rotationText;
+  Font font;
 
-  unsigned int fourBytesInt(unsigned int);
-  string fourBytesString(unsigned int);
+  void writePixel(unsigned int from, unsigned int to);
+  void updateRText();
+  void makeSprite();
 public:
   EditImage(const string &);
   EditImage();
   void getFilename(); // Get a filename to open
   bool readFile();
-  void makeSprite();
   void draw(RenderWindow &window);
-  void rotate(const double &);
+  void rotate(const float &degrees);
+  void calcRotate();
   void flip(const string &);
   void crop(Crop newCrop);
   bool save(string);
