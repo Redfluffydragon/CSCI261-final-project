@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include "Crop.h"
-#include "PNGChunk.h"
 #include "upng.h" // For PNG decoding
 #include "lodepng.h" // For PNG encoding
 
@@ -65,6 +64,7 @@ public:
   void setRotation(const float &degrees);
   void flip(const string &);
   void crop(Crop newCrop);
+  void reset(); // Reset the image to original
   bool save(string);
 };
 
