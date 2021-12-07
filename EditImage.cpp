@@ -45,7 +45,8 @@ EditImage::EditImage() {
   EditImage::message.setFont(EditImage::font);
   EditImage::message.setPosition(Vector2f(100, 400));
 
-  EditImage::instructions.setString("Press V or H to flip the image horizontally or vertically\nClick the buttons to rotate the image");
+  EditImage::instructions.setString(
+    "Press V or H to flip the image horizontally or vertically.\nClick the buttons to rotate the image.\nPress S to save the image.");
   EditImage::instructions.setFillColor(Color::Black);
   EditImage::instructions.setFont(EditImage::font);
   EditImage::instructions.setPosition(Vector2f(50, 600));
@@ -167,7 +168,7 @@ void EditImage::makeSprite() {
   EditImage::sprite = Sprite();
 
   EditImage::sprite.setOrigin(EditImage::width / 2, EditImage::height / 2);
-  EditImage::sprite.setPosition(320, 150);
+  EditImage::sprite.setPosition(420, 150);
 
   if (EditImage::fileType == "ppm") {
     Image tempImage;
@@ -192,6 +193,16 @@ void EditImage::makeSprite() {
 
   EditImage::sprite.setTexture(EditImage::texture);
 
+}
+
+// Reset the sprite and internal values to original
+void EditImage::reset() {
+  EditImage::sprite.setScale(Vector2f(1, 1));
+  EditImage::sprite.setRotation(0);
+  EditImage::rotation = 0;
+  EditImage::flipState[0] = 1;
+  EditImage::flipState[1] = 1;
+  EditImage::message.setString("Reset!");
 }
 
 // Draw the image sprite and stuff in the window
