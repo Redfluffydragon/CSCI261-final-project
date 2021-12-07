@@ -7,7 +7,8 @@
 
 // The include section adds extra definitions from the C++ standard library.
 #include <iostream> // For cin, cout, etc.
-#include "EditImage.h"
+#include "EditImage.h" // For the image to edit
+#include "Button.h" // For buttons
 
 // We will (most of the time) use the standard library namespace in our programs.
 using namespace std;
@@ -28,6 +29,13 @@ int main() {
     // The starting point of the mouse to calculate rotation
     Vector2i startingPoint;
 
+    Button rButtons[4]{
+      Button("0 deg", Vector2f(0, 40), Color::Cyan),
+      Button("90 deg", Vector2f(0, 110), Color::Cyan),
+      Button("180 deg", Vector2f(0, 180), Color::Cyan),
+      Button("270 deg", Vector2f(0, 250), Color::Cyan),
+    };
+
     RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
 
     // while our window is open, keep it open
@@ -41,6 +49,10 @@ int main() {
         //****************************************
 
         image.draw(window);
+
+        for (int i = 0; i < 4; i++) {
+          rButtons[i].draw(window);
+        }
 
         //****************************************
         //  ADD ALL OF OUR DRAWING ABOVE HERE
@@ -65,7 +77,12 @@ int main() {
               startingPoint = Mouse::getPosition();
             }
             else if ( event.type == Event::MouseButtonReleased ) {
-
+              for (int i = 0; i < 4; i++) {
+                if (rButtons[i].isClicked(Mouse::getPosition(window))) {
+                  image.setRotation(i * 90);
+                  image.calcRotate();
+                }
+              }
             }
             else if ( event.type == Event::KeyPressed) {
               if (event.key.code == Keyboard::H) {
