@@ -1,8 +1,12 @@
 /* CSCI 261 FINAL PROJECT
  *
  * Author: KAI-SHEN DERU
+ * 
+ * Resources used (Office Hours, Tutoring, Other Students, etc & in what capacity):
  *
  * !More complete description here...
+ * https://github.com/lvandeve/lodepng/blob/master/examples/example_encode.cpp
+ * https://github.com/elanthis/upng
  */
 
 // The include section adds extra definitions from the C++ standard library.
@@ -17,11 +21,14 @@ using namespace std;
 using  namespace sf;
 
 // Define any constants below this comment.
-const int WINDOW_SIZE = 640;
+const int WINDOW_SIZE = 840;
 
 int main() {
 
     EditImage image; // Automatically gets file name and reads in the file and makes a sprite
+
+    // If the mouse is over a button or not (for changing the cursor)
+    bool overButton = false;
 
     // Whether or not the R key is pressed, for rotating the image
     bool rDown = false;
@@ -36,11 +43,19 @@ int main() {
       Button("270 deg", Vector2f(0, 250), Color::Cyan),
     };
 
+    Button resetBtn("Reset", Vector2f(350, 400), Color::Red);
+
     RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
 
-    Cursor cursor;
-    cursor.loadFromSystem(Cursor::Hand);
-    bool overButton = false;
+    Cursor handCursor;
+    if (!handCursor.loadFromSystem(Cursor::Hand)) {
+      cerr << "Failed to load hand cursor" << endl;
+    }
+    Cursor arrowCursor;
+    if (!arrowCursor.loadFromSystem(Cursor::Arrow)) {
+      cerr << "Failed to load default cursor" << endl;
+    }
+
 
     // while our window is open, keep it open
     // this is our draw loop
@@ -51,16 +66,20 @@ int main() {
         //****************************************
         //  ADD ALL OF OUR DRAWING BELOW HERE
         //****************************************
-
+        
+        // window.setMouseCursor(cursor);
         image.draw(window);
 
+        // Buttons
         for (int i = 0; i < 4; i++) {
           rButtons[i].draw(window);
         }
+        resetBtn.draw(window);
 
-        if (overButton) {
-          window.setMouseCursor(cursor);
-        }
+        // Make the cursor a hand when you hover over buttons
+        overButton ?
+          window.setMouseCursor(handCursor) :
+          window.setMouseCursor(arrowCursor);
 
         //****************************************
         //  ADD ALL OF OUR DRAWING ABOVE HERE
@@ -84,16 +103,20 @@ int main() {
             else if ( event.type == Event::MouseButtonPressed ) {
 
             }
-            else if ( event.type == Event::MouseMoved && rDown ) {
-              image.rotate(float(Mouse::getPosition().x - startingPoint.x) / 3);
-              startingPoint = Mouse::getPosition();
+            else if ( event.type == Event::MouseMoved ) {
+              if (rDown) {
+                image.rotate(float(Mouse::getPosition().x - startingPoint.x) / 3);
+                startingPoint = Mouse::getPosition();
+              }
 
               overButton = false;
               for (int i = 0; i < 4; i++) {
                 if (rButtons[i].isWithin(Mouse::getPosition(window))) {
                   overButton = true;
-                  window.setMouseCursor(cursor);
                 }
+              }
+              if (resetBtn.isWithin(Mouse::getPosition(window))) {
+                overButton = true;
               }
 
             }
@@ -102,6 +125,9 @@ int main() {
                 if (rButtons[i].isWithin(Mouse::getPosition(window))) {
                   image.setRotation(i * 90);
                 }
+              }
+              if (resetBtn.isWithin(Mouse::getPosition(window))) {
+                image.reset();
               }
             }
             else if ( event.type == Event::KeyPressed) {
