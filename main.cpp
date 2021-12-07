@@ -69,6 +69,10 @@ int main() {
                 // i.e. they clicked the X on the window
                 window.close();                 // then close our window
             }
+            else if (event.type == Event::Resized) { // Make it so things don't stretch when the window is resized
+              FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+              window.setView(View(visibleArea));
+            }
             else if ( event.type == Event::MouseButtonPressed ) {
 
             }
