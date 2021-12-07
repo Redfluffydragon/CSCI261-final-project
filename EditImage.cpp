@@ -37,7 +37,6 @@ EditImage::EditImage() {
   EditImage::updateRText();
   EditImage::rotationText.setFillColor(Color::Black);
   EditImage::rotationText.setFont(EditImage::font);
-  // EditImage::rotationText.setPosition()
 }
 
 void EditImage::writePixel(unsigned int from, unsigned int to) {
@@ -98,7 +97,7 @@ bool EditImage::readFile() {
     // read the image
 
     // https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
-    EditImage::buffer = vector<uint8_t>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
+    EditImage::buffer = vector<unsigned char>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
     // Create a pointer to the byte array behind the buffer vector - https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array
     unsigned char* tempCharArray = &EditImage::buffer[0];
@@ -187,6 +186,12 @@ void EditImage::rotate(const float &degrees)  {
   EditImage::updateRText();
 }
 
+void EditImage::setRotation(const float &degrees) {
+  EditImage::sprite.setRotation(degrees);
+  EditImage::rotation = EditImage::sprite.getRotation();
+  EditImage::updateRText();
+}
+
 void EditImage::calcRotate() {
   for (unsigned int y = 0; y < EditImage::height; y++) {
     for (unsigned int x = 0; x < EditImage::width; x++) {
@@ -199,7 +204,6 @@ void EditImage::calcRotate() {
 }
 
 void EditImage::flip(const string &direction) {
-
   // Flip horizontally
   if (direction == "h") {
     for (unsigned int y = 0; y < EditImage::height; y++) {
@@ -219,6 +223,7 @@ void EditImage::flip(const string &direction) {
     EditImage::flipState[1] = EditImage::flipState[1] == 1 ? -1 : 1;
   }
 
+  // Use scale to mirror the displayed image appropriately
   EditImage::sprite.setScale(EditImage::flipState[0], EditImage::flipState[1]);
 
   // Set the read vector equal to the write vector so we can work on the newly modified image
@@ -232,35 +237,46 @@ void EditImage::crop(Crop newCrop) {
 }
 
 bool EditImage::save(string newFilename) {
+  if (EditImage::saving) {
+    return false;
+  }
+  EditImage::saving = true;
+
   if (newFilename.empty()) {
     newFilename = "edited_" + EditImage::filename;
   }
 
-  FILE* newImage;
+  // https://www.cplusplus.com/reference/cstdio/fopen/
+  // wb = write binary
+  EditImage::newImage = fopen("edited_image.png", "wb");
 
-  newImage = fopen("edited_image.png", "wb");
-
-  // ofstream newImage("edited_image.png");
   
   // check for an error
-  if ( !newImage ) {
+  if ( !EditImage::newImage ) {
     cerr << "Error opening output file";
     return false;
   }
 
-  // Temp vector to hold the encoded image
-  vector<unsigned char> encoded;
+  // Clear the buffer
+  EditImage::buffer.clear();
 
-  // Encode the image
-  lodepng::encode(encoded, EditImage::read, EditImage::width, EditImage::height);
+  // Encode the image into the buffer
+  lodepng::encode(EditImage::buffer, EditImage::read, EditImage::width, EditImage::height);
+  cout << "Save size: " << EditImage::buffer.size();
 
-  // Write the image to file
-  fwrite(&encoded[0], 1, EditImage::size, newImage);
+  // Write the image to file - 1 is the size of one char
+  int written = fwrite(&EditImage::buffer[0], 1, EditImage::buffer.size(), EditImage::newImage);
+  if (written == EditImage::buffer.size()) {
+    cout << "Success!";
+  }
+  else {
+    cerr << "Fail. only wrote " << written << " elements out of " << EditImage::buffer.size();
+  }
 
-  fclose(newImage);
+  fclose(EditImage::newImage);
 
   cout << endl << "Saved!";
 
-
+  EditImage::saving = false;
   return true;
 }
