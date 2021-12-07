@@ -45,6 +45,7 @@ private:
 
   Text message;
   Text rotationText;
+  Text instructions;
   Font font;
 
   void writePixel(unsigned int from, unsigned int to);

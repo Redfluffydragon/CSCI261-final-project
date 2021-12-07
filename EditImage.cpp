@@ -44,6 +44,11 @@ EditImage::EditImage() {
   EditImage::message.setFillColor(Color::Black);
   EditImage::message.setFont(EditImage::font);
   EditImage::message.setPosition(Vector2f(100, 400));
+
+  EditImage::instructions.setString("Press V or H to flip the image horizontally or vertically\nClick the buttons to rotate the image");
+  EditImage::instructions.setFillColor(Color::Black);
+  EditImage::instructions.setFont(EditImage::font);
+  EditImage::instructions.setPosition(Vector2f(50, 600));
 }
 
 // Write a pixel (four bytes/chars) from the location in read to the location in write
@@ -194,6 +199,7 @@ void EditImage::draw(RenderWindow &window) {
   window.draw(EditImage::sprite);
   window.draw(EditImage::rotationText);
   window.draw(EditImage::message);
+  window.draw(EditImage::instructions);
 }
 
 // Rotate the image relative to where it is currently
