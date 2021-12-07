@@ -35,10 +35,10 @@ void Button::draw(RenderWindow &window) {
     window.draw(Button::text);
 }
 
-bool Button::isClicked(Vector2i clickPosition) {
+bool Button::isWithin(Vector2i mousePosition) {
     return
-        clickPosition.x >= Button::position.x &&
-        clickPosition.x <= Button::position.x + Button::size.x &&
-        clickPosition.y >= Button::position.y &&
-        clickPosition.y <= Button::position.y + Button::size.y;
+        mousePosition.x >= Button::position.x &&
+        mousePosition.x <= Button::position.x + Button::size.x &&
+        mousePosition.y >= Button::position.y &&
+        mousePosition.y <= Button::position.y + Button::size.y;
 }

@@ -24,7 +24,7 @@ public:
   Button(string text, Vector2f position, Color color);
 
   void draw(RenderWindow &window);
-  bool isClicked(Vector2i clickPosition);
+  bool isWithin(Vector2i mousePosition);
   
 };
 
