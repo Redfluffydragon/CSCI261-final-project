@@ -5,6 +5,7 @@
 #ifndef FINAL_PROJECT_BUTTON_H
 #define FINAL_PROJECT_BUTTON_H
 
+#include <string>
 using namespace std;
 
 #include <SFML/Graphics.hpp>
@@ -12,14 +13,23 @@ using namespace sf;
 
 class Button {
 private:
-  Vector2f size;
-  Vector2f position;
-  RectangleShape rect;
-  Text text;
-  Font font;
-  Color color;
-  int padding = 20;
+  Vector2f size; // Width and height of the rectangle. Calculated from the text size
+  Vector2f position; // Position of the rectangle
+  RectangleShape rect; // The rectangle to display
+  Text text; // Button text object
+  Font font; // Font - only does Arial
+  Color color; // Color of the rectangle - text is always black
+  int padding = 20; // Padding around the text
+
 public:
+  const string &getText() const;
+
+  void setText(const string &text);
+
+  const Color &getColor() const;
+
+  void setColor(const Color &color);
+
   Button();
   Button(string text, Vector2f position, Color color);
 

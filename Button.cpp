@@ -42,3 +42,19 @@ bool Button::isWithin(Vector2i mousePosition) {
         mousePosition.y >= Button::position.y &&
         mousePosition.y <= Button::position.y + Button::size.y;
 }
+
+const Color &Button::getColor() const {
+    return color;
+}
+
+void Button::setColor(const Color &color) {
+    Button::color = color;
+}
+
+const string &Button::getText() const {
+    return Button::text.getString();
+}
+
+void Button::setText(const string &text) {
+    Button::text.setString(text);
+}
