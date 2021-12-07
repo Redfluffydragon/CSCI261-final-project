@@ -38,6 +38,10 @@ int main() {
 
     RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
 
+    Cursor cursor;
+    cursor.loadFromSystem(Cursor::Hand);
+    bool overButton = false;
+
     // while our window is open, keep it open
     // this is our draw loop
     while( window.isOpen() ) {
@@ -52,6 +56,10 @@ int main() {
 
         for (int i = 0; i < 4; i++) {
           rButtons[i].draw(window);
+        }
+
+        if (overButton) {
+          window.setMouseCursor(cursor);
         }
 
         //****************************************
@@ -79,12 +87,20 @@ int main() {
             else if ( event.type == Event::MouseMoved && rDown ) {
               image.rotate(float(Mouse::getPosition().x - startingPoint.x) / 3);
               startingPoint = Mouse::getPosition();
+
+              overButton = false;
+              for (int i = 0; i < 4; i++) {
+                if (rButtons[i].isWithin(Mouse::getPosition(window))) {
+                  overButton = true;
+                  window.setMouseCursor(cursor);
+                }
+              }
+
             }
             else if ( event.type == Event::MouseButtonReleased ) {
               for (int i = 0; i < 4; i++) {
-                if (rButtons[i].isClicked(Mouse::getPosition(window))) {
+                if (rButtons[i].isWithin(Mouse::getPosition(window))) {
                   image.setRotation(i * 90);
-                  image.calcRotate();
                 }
               }
             }
@@ -106,7 +122,6 @@ int main() {
             else if (event.type == Event::KeyReleased) {
               if (event.key.code == Keyboard::R) {
                 rDown = false;
-                image.calcRotate();
               }
             }
         }

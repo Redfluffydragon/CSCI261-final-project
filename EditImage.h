@@ -27,26 +27,29 @@ private:
   unsigned int size; // The size of the pixel array
 
   double rotation = 0.0; // The current rotation
+  double saveRotation = 0.0; // The rotation that was last saved
   Crop currentCrop; // The current crop
   int flipState[2] = {1, 1}; // The current horizontal and vertical flip
 
   vector<unsigned char> buffer; // To get the image data to pass to upng
 
-  vector<unsigned char> read; // A vector holding a version of the current image
-  vector<unsigned char> write; // A vector holding the other version of the current image
+  vector<unsigned char> read; // A vector holding a version of the current image to read from
+  vector<unsigned char> write; // A vector to write the edited image to 
 
   FILE* newImage;
-  bool saving = false;
 
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
 
+  Text message;
   Text rotationText;
   Font font;
 
   void writePixel(unsigned int from, unsigned int to);
+  void rotate90();
   void updateRText();
   void makeSprite();
+
 public:
   EditImage(const string &);
   EditImage();

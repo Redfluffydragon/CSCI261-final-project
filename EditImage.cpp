@@ -25,7 +25,8 @@ EditImage::EditImage(const string &inputFilename) {
 EditImage::EditImage() {
   // getFilename();
   // filename = "data/wallpaper.ppm";
-  filename = "data/pack_icon.png";
+  // filename = "data/pack_icon.png";
+  filename = "data/tearTreeSmall.png";
   
   if (!EditImage::readFile()) {
     cout << "Failed to open file";
@@ -37,6 +38,10 @@ EditImage::EditImage() {
   EditImage::updateRText();
   EditImage::rotationText.setFillColor(Color::Black);
   EditImage::rotationText.setFont(EditImage::font);
+
+  EditImage::message.setFillColor(Color::Black);
+  EditImage::message.setFont(EditImage::font);
+  EditImage::message.setPosition(Vector2f(100, 400));
 }
 
 void EditImage::writePixel(unsigned int from, unsigned int to) {
@@ -138,6 +143,7 @@ bool EditImage::readFile() {
   return true;
 }
 
+// Update the displayed rotation
 void EditImage::updateRText() {
   EditImage::rotationText.setString("Rotation: " + to_string(EditImage::rotation) + char(176));
 }
@@ -177,7 +183,7 @@ void EditImage::makeSprite() {
 void EditImage::draw(RenderWindow &window) {
   window.draw(EditImage::sprite);
   window.draw(EditImage::rotationText);
-
+  window.draw(EditImage::message);
 }
 
 void EditImage::rotate(const float &degrees)  {
@@ -192,12 +198,54 @@ void EditImage::setRotation(const float &degrees) {
   EditImage::updateRText();
 }
 
-void EditImage::calcRotate() {
+void EditImage::rotate90() {
+
+  // Get the new width and new height for calculating pixel position
+  unsigned int newWidth = EditImage::height;
+  unsigned int newHeight = EditImage::width;
+
   for (unsigned int y = 0; y < EditImage::height; y++) {
     for (unsigned int x = 0; x < EditImage::width; x++) {
-      EditImage::writePixel(4 * (y * EditImage::width + x), sin(x));
+      // THIS WORKED THE FIRST TRY!!!!!!!!!!!!!!!! (On a square image)
+      EditImage::writePixel(4 * (y * EditImage::width + x), 4 * (newWidth - y - 1 + (newHeight * x)));
     }
   }
+  cout << endl << "Rotate90";
+
+ /*  EditImage::message.setString(
+    "Old: " + to_string(EditImage::width) + " " + to_string(EditImage::height) +
+    "New: " + to_string(newWidth) + " " + to_string(newHeight)
+  ); */
+
+  // Swap the actual width and height
+  EditImage::height = newHeight;
+  EditImage::width = newWidth;
+  
+  // cout << "New?: " + to_string(EditImage::width) + " " + to_string(EditImage::height);
+
+  // Set the read vector equal to the write vector so we can work on the newly modified image
+  EditImage::read = EditImage::write;
+}
+
+void EditImage::calcRotate() {
+  if ((int)EditImage::rotation % 90 == 0) {
+    cout << endl << "Rotation: " << EditImage::rotation << " " << EditImage::saveRotation << " "
+    << (((int(EditImage::rotation - EditImage::saveRotation) % 360) / 90) + 4) % 4 << endl;
+
+    for (int i = 0; i < (((int(EditImage::rotation - EditImage::saveRotation) % 360) / 90) + 4) % 4; i++) {
+      EditImage::rotate90();
+    }
+    cout << endl;
+  }
+  else {
+    for (unsigned int y = 0; y < EditImage::height; y++) {
+      for (unsigned int x = 0; x < EditImage::width; x++) {
+        EditImage::writePixel(4 * (y * EditImage::width + x), sin(x));
+      }
+    }
+  }
+
+  EditImage::saveRotation = EditImage::rotation;
 
   // Set the read vector equal to the write vector so we can work on the newly modified image
   EditImage::read = EditImage::write;
@@ -237,10 +285,8 @@ void EditImage::crop(Crop newCrop) {
 }
 
 bool EditImage::save(string newFilename) {
-  if (EditImage::saving) {
-    return false;
-  }
-  EditImage::saving = true;
+  //Only actually move the pixels when saving
+  EditImage::calcRotate();
 
   if (newFilename.empty()) {
     newFilename = "edited_" + EditImage::filename;
@@ -262,21 +308,21 @@ bool EditImage::save(string newFilename) {
 
   // Encode the image into the buffer
   lodepng::encode(EditImage::buffer, EditImage::read, EditImage::width, EditImage::height);
-  cout << "Save size: " << EditImage::buffer.size();
 
-  // Write the image to file - 1 is the size of one char
+  // Write the image to file
+  // 1 is the size of one char
   int written = fwrite(&EditImage::buffer[0], 1, EditImage::buffer.size(), EditImage::newImage);
   if (written == EditImage::buffer.size()) {
-    cout << "Success!";
+    EditImage::message.setString("Saved!");
   }
   else {
+    EditImage::message.setString("Saved incorrectly");
     cerr << "Fail. only wrote " << written << " elements out of " << EditImage::buffer.size();
   }
 
   fclose(EditImage::newImage);
 
-  cout << endl << "Saved!";
+  // EditImage::message.setString("Saved!");
 
-  EditImage::saving = false;
   return true;
 }
