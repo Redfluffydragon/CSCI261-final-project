@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 		distribution.
 */
 
-#if !defined(UPNG_H)
+#ifndef UPNG_H
 #define UPNG_H
 
 typedef enum upng_error {
