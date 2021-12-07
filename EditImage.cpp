@@ -52,8 +52,7 @@ void EditImage::writePixel(unsigned int from, unsigned int to) {
 }
 
 void EditImage::getFilename() {
-  cout << "Please enter the name of the file you would like to open: ";
-  cin >> filename; // ? Check for errors? use getline for file names with spaces?
+  cin >> EditImage::filename; // ? Check for errors? use getline for file names with spaces?
 }
 
 bool EditImage::readFile() {
@@ -207,7 +206,10 @@ void EditImage::rotate90() {
   for (unsigned int y = 0; y < EditImage::height; y++) {
     for (unsigned int x = 0; x < EditImage::width; x++) {
       // THIS WORKED THE FIRST TRY!!!!!!!!!!!!!!!! (On a square image)
-      EditImage::writePixel(4 * (y * EditImage::width + x), 4 * (newWidth - y - 1 + (newHeight * x)));
+      EditImage::writePixel(
+        4 * (y * EditImage::width + x),
+        4 * (newWidth - y - 1 + newWidth * x)
+      );
     }
   }
   cout << endl << "Rotate90";
