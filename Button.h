@@ -22,7 +22,7 @@ private:
   int padding = 20; // Padding around the text
 
 public:
-  const string &getText() const;
+  string getText();
 
   void setText(const string &text);
 

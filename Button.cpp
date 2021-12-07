@@ -20,7 +20,7 @@ Button::Button(string text, Vector2f position, Color color) {
     Button::text.setFont(Button::font);
     Button::text.setFillColor(Color::Black);
     Button::text.setString(text);
-    Button::text.setPosition(Vector2f(Button::position.x + Button::padding, Button::position.y + Button::padding));
+    Button::text.setPosition(Vector2f(Button::position.x + Button::padding - 5, Button::position.y + Button::padding - 5));
 
     FloatRect textSize = Button::text.getGlobalBounds();
     Button::size = Vector2f(textSize.width + Button::padding * 2, textSize.height + Button::padding * 2);
@@ -51,7 +51,7 @@ void Button::setColor(const Color &color) {
     Button::color = color;
 }
 
-const string &Button::getText() const {
+string Button::getText() {
     return Button::text.getString();
 }
 
