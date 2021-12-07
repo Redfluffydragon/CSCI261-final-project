@@ -9,10 +9,11 @@
 
 using namespace std;
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp> // Include SFML Graphics library
 
 using namespace sf;
 
+// Parameterized constructor that takes a file name
 EditImage::EditImage(const string &inputFilename) {
   filename = inputFilename;
 
@@ -22,6 +23,7 @@ EditImage::EditImage(const string &inputFilename) {
 
 }
 
+// Default constructor that gets a file name 
 EditImage::EditImage() {
   // getFilename();
   // filename = "data/wallpaper.ppm";
@@ -44,6 +46,7 @@ EditImage::EditImage() {
   EditImage::message.setPosition(Vector2f(100, 400));
 }
 
+// Write a pixel (four bytes/chars) from the location in read to the location in write
 void EditImage::writePixel(unsigned int from, unsigned int to) {
   EditImage::write.at(to) = EditImage::read.at(from);
   EditImage::write.at(to + 1) = EditImage::read.at(from + 1);
@@ -51,10 +54,12 @@ void EditImage::writePixel(unsigned int from, unsigned int to) {
   EditImage::write.at(to + 3) = EditImage::read.at(from + 3);
 }
 
+// Get a file name to open
 void EditImage::getFilename() {
   cin >> EditImage::filename; // ? Check for errors? use getline for file names with spaces?
 }
 
+// Read an image from file into a vector
 bool EditImage::readFile() {
   // read the image
 
@@ -147,6 +152,7 @@ void EditImage::updateRText() {
   EditImage::rotationText.setString("Rotation: " + to_string(EditImage::rotation) + char(176));
 }
 
+// Make a sprite to display the image
 void EditImage::makeSprite() {
 
   EditImage::sprite = Sprite();
@@ -179,24 +185,28 @@ void EditImage::makeSprite() {
 
 }
 
+// Draw the image sprite and stuff in the window
 void EditImage::draw(RenderWindow &window) {
   window.draw(EditImage::sprite);
   window.draw(EditImage::rotationText);
   window.draw(EditImage::message);
 }
 
+// Rotate the image relative to where it is currently
 void EditImage::rotate(const float &degrees)  {
   EditImage::sprite.rotate(degrees);
   EditImage::rotation = EditImage::sprite.getRotation();
   EditImage::updateRText();
 }
 
+// Set the rotation of the image relative to zero degrees
 void EditImage::setRotation(const float &degrees) {
   EditImage::sprite.setRotation(degrees);
   EditImage::rotation = EditImage::sprite.getRotation();
   EditImage::updateRText();
 }
 
+// Actually move pixels around to rotate the image 90 degrees
 void EditImage::rotate90() {
 
   // Get the new width and new height for calculating pixel position
@@ -212,32 +222,21 @@ void EditImage::rotate90() {
       );
     }
   }
-  cout << endl << "Rotate90";
-
- /*  EditImage::message.setString(
-    "Old: " + to_string(EditImage::width) + " " + to_string(EditImage::height) +
-    "New: " + to_string(newWidth) + " " + to_string(newHeight)
-  ); */
 
   // Swap the actual width and height
   EditImage::height = newHeight;
   EditImage::width = newWidth;
   
-  // cout << "New?: " + to_string(EditImage::width) + " " + to_string(EditImage::height);
-
   // Set the read vector equal to the write vector so we can work on the newly modified image
   EditImage::read = EditImage::write;
 }
 
+// Move pixels and calculate the rotation of the image
 void EditImage::calcRotate() {
   if ((int)EditImage::rotation % 90 == 0) {
-    cout << endl << "Rotation: " << EditImage::rotation << " " << EditImage::saveRotation << " "
-    << (((int(EditImage::rotation - EditImage::saveRotation) % 360) / 90) + 4) % 4 << endl;
-
     for (int i = 0; i < (((int(EditImage::rotation - EditImage::saveRotation) % 360) / 90) + 4) % 4; i++) {
       EditImage::rotate90();
     }
-    cout << endl;
   }
   else {
     for (unsigned int y = 0; y < EditImage::height; y++) {
@@ -253,6 +252,7 @@ void EditImage::calcRotate() {
   EditImage::read = EditImage::write;
 }
 
+// Flip the image vertically or horizontally
 void EditImage::flip(const string &direction) {
   // Flip horizontally
   if (direction == "h") {
@@ -280,12 +280,14 @@ void EditImage::flip(const string &direction) {
   EditImage::read = EditImage::write;
 }
 
+// Crop the image
 void EditImage::crop(Crop newCrop) {
 
   // Set the read vector equal to the write vector so we can work on the newly modified image
   EditImage::read = EditImage::write;
 }
 
+// Save the image to file
 bool EditImage::save(string newFilename) {
   //Only actually move the pixels when saving
   EditImage::calcRotate();
