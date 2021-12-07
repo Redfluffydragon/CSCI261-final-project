@@ -16,7 +16,7 @@ using namespace sf;
 EditImage::EditImage(const string &inputFilename) {
   filename = inputFilename;
 
-  if (!EditImage::read()) {
+  if (!EditImage::readFile()) {
     cout << "Failed to open file";
   }
 
@@ -27,7 +27,7 @@ EditImage::EditImage() {
   // filename = "data/wallpaper.ppm";
   filename = "data/pack_icon.png";
   
-  if (!EditImage::read()) {
+  if (!EditImage::readFile()) {
     cout << "Failed to open file";
   }
 }
@@ -37,7 +37,7 @@ void EditImage::getFilename() {
   cin >> filename; // ? Check for errors? use getline for file names with spaces?
 }
 
-bool EditImage::read() {
+bool EditImage::readFile() {
   // read the image
 
   // declare ifstream object and open the file
@@ -73,7 +73,7 @@ bool EditImage::read() {
     for (int i = 0; i < EditImage::width; i++) {
       for (int j = 0; j < EditImage::height; j++) {
         imageFile >> red >> green >> blue;
-        EditImage::image1.emplace_back(red, green, blue);
+        // EditImage::image1.emplace_back(red, green, blue);
         /* EditImage::image1.push_back(green);
         EditImage::image1.push_back(blue);
         EditImage::image1.push_back(255); // Fake alpha channel */
@@ -86,20 +86,30 @@ bool EditImage::read() {
     // https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
     EditImage::buffer = vector<uint8_t>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
-    // Create a pointer to the byte array behind the buffer - https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array
+    // Create a pointer to the byte array behind the buffer vector - https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array
     unsigned char* tempCharArray = &EditImage::buffer[0];
 
     // Create a upng instance and pass the byte array to the upng instance
     upng_t* upng = upng_new_from_bytes(tempCharArray, (unsigned long)buffer.size());
 
+    // Decode the image (decompress it)
     upng_decode(upng);
 
+    // EditImage::header = upng_header(upng); // Get the image header
     EditImage::width = upng_get_width(upng); // Returns width of image in pixels
     EditImage::height = upng_get_height(upng); // Returns height of image in pixels
 
+    // Temporary buffer
     const unsigned char* getBuffer = upng_get_buffer(upng);
 
-    // EditImage::image1 = vector<unsigned char>(getBuffer);
+    EditImage::size = upng_get_size(upng);
+
+    // Transfer into a vector so that way it can be a member of the object
+    // https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
+    EditImage::read.insert(EditImage::read.end(), &getBuffer[0], &getBuffer[EditImage::size]);
+
+    // Now that it's in a vector we don't need the char array anymore, so free it from memory
+    upng_free(upng);
 
   }
 
@@ -110,36 +120,6 @@ bool EditImage::read() {
   EditImage::makeSprite();
 
   return true;
-}
-
-// Convert a hex number spread over four bytes into an unsigned int
-unsigned int EditImage::fourBytesInt(unsigned int start) {
-  unsigned int sum = 0;
-  for (int i = start; i < start + 4; i++) {
-    sum += (int)EditImage::buffer.at(i) * pow(16, (6 - 2 * (i - start)));
-  }
-
-  return sum;
-}
-
-string EditImage::fourBytesString(unsigned int start) {
-  string stringSum = "";
-  for (int i = start; i < start + 4; i++) {
-    stringSum += EditImage::buffer.at(i);
-  }
-  return stringSum;
-}
-
-PNGChunk EditImage::findChunk(unsigned int start) {
-  // Read in size of chunk
-  unsigned int size = fourBytesInt(start);
-
-  // Read in type of chunk
-  string chunkType = fourBytesString(start + 4);
-
-  string crc = fourBytesString(start + 8 + size);
-
-  return PNGChunk{chunkType, size, start + 8, start + 8 + size, crc};
 }
 
 void EditImage::makeSprite() {
@@ -179,34 +159,75 @@ void EditImage::draw(RenderWindow &window) {
 }
 
 void EditImage::rotate(const double &degrees)  {
+  for (int i = 0; i < EditImage::size; i += 4) {
 
+  }
+
+  // Set the read vector equal to the write vector so we can work on the newly modified image
+  EditImage::read = EditImage::write;
 }
 
 void EditImage::flip(const string &direction) {
 
+  
+  if (direction == "h") {
+    for (unsigned int y = 0; y < EditImage::height * 4; y += 4) {
+      for (unsigned int x = 0; x < EditImage::width * 4; x += 4) {
+        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x )) = EditImage::read.at(y * EditImage::width * 4 + x);
+        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x + 1)) = EditImage::read.at(y * EditImage::width * 4 + x + 1);
+        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x + 2)) = EditImage::read.at(y * EditImage::width * 4 + x + 2);
+        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x + 3)) = EditImage::read.at(y * EditImage::width * 4 + x + 3);
+      }
+    }
+  }
+  else if (direction == "v") {
+    for (unsigned int y = 0; y < EditImage::height * 4; y += 4) {
+      for (unsigned int x = 0; x < EditImage::width * 4; x += 4) {
+        EditImage::write.at(y * EditImage::width * 4 + (EditImage::width * 4 - x)) = EditImage::read.at(y * EditImage::width * 4 + x);
+      }
+    }
+  }
+
+  // Set the read vector equal to the write vector so we can work on the newly modified image
+  EditImage::read = EditImage::write;
 }
 
 void EditImage::crop(Crop newCrop) {
 
+  // Set the read vector equal to the write vector so we can work on the newly modified image
+  EditImage::read = EditImage::write;
 }
 
 bool EditImage::save(string newFilename) {
   if (newFilename.empty()) {
-    newFilename = filename + "_edited";
+    newFilename = "edited_" + EditImage::filename;
   }
 
-  ofstream newImage(filename);
+  FILE* newImage;
+
+  newImage = fopen("edited_image.png", "wb");
+
+  // ofstream newImage("edited_image.png");
   
   // check for an error
-  if ( newImage.fail() ) {
+  if ( !newImage ) {
     cerr << "Error opening output file";
     return false;
   }
-  
-  newImage << "data out";
-  
-  // close the file
-  newImage.close();
+
+  // Temp vector to hold the encoded image
+  vector<unsigned char> encoded;
+
+  // Encode the image
+  lodepng::encode(encoded, EditImage::read, EditImage::width, EditImage::height);
+
+  // Write the image to file
+  fwrite(&encoded[0], 1, EditImage::size, newImage);
+
+  fclose(newImage);
+
+  cout << endl << "Saved!";
+
 
   return true;
 }
