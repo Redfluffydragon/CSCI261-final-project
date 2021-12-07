@@ -30,10 +30,13 @@ private:
   Crop currentCrop; // The current crop
   int flipState[2] = {1, 1}; // The current horizontal and vertical flip
 
-  vector<uint8_t> buffer; // To get the image data to pass to upng
+  vector<unsigned char> buffer; // To get the image data to pass to upng
 
   vector<unsigned char> read; // A vector holding a version of the current image
   vector<unsigned char> write; // A vector holding the other version of the current image
+
+  FILE* newImage;
+  bool saving = false;
 
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
@@ -51,6 +54,7 @@ public:
   bool readFile();
   void draw(RenderWindow &window);
   void rotate(const float &degrees);
+  void setRotation(const float &degrees);
   void calcRotate();
   void flip(const string &);
   void crop(Crop newCrop);
