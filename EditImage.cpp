@@ -27,7 +27,7 @@ EditImage::EditImage(const string &inputFilename) {
 
 // Default constructor that loads a default image
 EditImage::EditImage() {
-  // Default file
+  // !Default file
   EditImage::filename = "data/tearTreeSmall.png";
   
   // Try to read the file (readFile does error handling) with EditImage::message
@@ -39,16 +39,20 @@ EditImage::EditImage() {
 
 // Set up GUI elements
 void EditImage::GUISetUp() {
+  // Load Arial from file
   EditImage::font.loadFromFile("data/arial.ttf");
 
+  // Set up the rotation text
   EditImage::updateRText();
   EditImage::rotationText.setFillColor(Color::Black);
   EditImage::rotationText.setFont(EditImage::font);
 
+  // Set up the message text
   EditImage::message.setFillColor(Color::Black);
   EditImage::message.setFont(EditImage::font);
   EditImage::message.setPosition(Vector2f(10, 350));
 
+  // Set up the instructions
   EditImage::instructions.setString(
     "Press V or H to flip the image horizontally or vertically.\nClick the buttons to rotate the image.\nPress S to save the image.\nOnly supports PNG images.");
   EditImage::instructions.setFillColor(Color::Black);
@@ -72,7 +76,7 @@ void EditImage::writePixel(unsigned int from, unsigned int to) {
 // Read an image from file into a vector
 bool EditImage::readFile(const string& filename) {
   // declare ifstream object and open the file in binary read mode so it can read all the image data correctly
-  ifstream imageFile(EditImage::filename, ios_base::binary);
+  ifstream imageFile(filename, ios_base::binary);
   
   // check for an error
   if ( imageFile.fail() ) {
@@ -80,46 +84,50 @@ bool EditImage::readFile(const string& filename) {
     return false;
   }
 
-  EditImage::fileType = EditImage::filename.substr(EditImage::filename.find(".") + 1, EditImage::filename.size() - 1);
-  cout << "Opened " << EditImage::fileType << " file" << endl;
+  // Find the file extension of the file
+  // Get a 3-character substr because the largest file it cares about should only be 3 characters long
+  EditImage::fileType = filename.substr(filename.find(".") + 1, 3);
 
-  if (EditImage::fileType == "png") {
+  // only support files that end in .png or .PNG
+  if (EditImage::fileType == "png" || EditImage::fileType == "PNG") {
     // read the image
 
-    // https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
+    // Use an istreambuf_iterator to get read all the image data correctly
+    // !https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
     EditImage::buffer = vector<unsigned char>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
-    // Create a pointer to the byte array behind the buffer vector - https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array
+    // Create a pointer to the byte array behind the buffer vector 
+    // !https://stackoverflow.com/questions/2923272/how-to-convert-vector-to-array
     unsigned char* tempCharArray = &EditImage::buffer[0];
 
-    // Create a upng instance and pass the byte array to the upng instance
+    // Create a upng instance and pass the byte array to said instance
     upng_t* upng = upng_new_from_bytes(tempCharArray, (unsigned long)buffer.size());
 
-    // Decode the image (decompress it)
+    // Decode the image (decompress it) with the upng library
     upng_decode(upng);
 
-    // EditImage::header = upng_header(upng); // Get the image header
-    EditImage::originalWidth = upng_get_width(upng); // Returns width of image in pixels
-    EditImage::width = upng_get_width(upng); // Returns width of image in pixels
+    // Get the dimensions of the image in pixels
+    EditImage::originalWidth = upng_get_width(upng);
+    EditImage::width = upng_get_width(upng);
 
-    EditImage::originalHeight = upng_get_height(upng); // Returns height of image in pixels
-    EditImage::height = upng_get_height(upng); // Returns height of image in pixels
+    EditImage::originalHeight = upng_get_height(upng);
+    EditImage::height = upng_get_height(upng);
 
-    // Temporary buffer
+    // Get the image data in a temporary buffer
     const unsigned char* getBuffer = upng_get_buffer(upng);
 
+    //Get the size of the image data in bytes
     EditImage::size = upng_get_size(upng);
 
-    // Transfer into a vector so that way it can be a member of the object
-    // https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
+    // Transfer into a vector so it can be a member of the object
+    // !https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
     EditImage::original.insert(EditImage::original.end(), &getBuffer[0], &getBuffer[EditImage::size]);
-
 
     // Also transfer into the read and write vectors so they're the right size
     EditImage::write.insert(EditImage::write.end(), &getBuffer[0], &getBuffer[EditImage::size]);
     EditImage::read.insert(EditImage::read.end(), &getBuffer[0], &getBuffer[EditImage::size]);
 
-    // Now that it's in a vector we don't need the char array anymore, so free it from memory
+    // Now that it's in a vector it don't need the char array anymore, so free it from memory
     upng_free(upng);
 
     // Now make a sprite to display the image
@@ -146,43 +154,34 @@ void EditImage::updateRText() {
 // Make a sprite to display the image
 void EditImage::makeSprite() {
 
+  // Make a new sprite
   EditImage::sprite = Sprite();
 
+  // Set origin to the center for rotation
   EditImage::sprite.setOrigin(EditImage::width / 2, EditImage::height / 2);
+
+  // Put it in the middle near the top of the window
   EditImage::sprite.setPosition(420, 150);
 
-  if (EditImage::fileType == "ppm") {
-    Image tempImage;
-    tempImage.create(EditImage::width, EditImage::height);
+  // Load the image file as a texture
+  EditImage::texture.loadFromFile(EditImage::filename);
 
-    /* for (int i = 0; i < EditImage::width; i++) {
-      for (int j = 0; j < EditImage::height; j++) {
-        tempImage.setPixel(i, j, EditImage::image1.at((i * EditImage::width) + j));
-      }
-    } */
-
-    // Create texture
-    EditImage::texture = Texture();
-    EditImage::texture.create(EditImage::width, EditImage::height);
-
-    EditImage::texture.loadFromImage(tempImage);
-  }
-  else {
-    EditImage::texture.loadFromFile(EditImage::filename);
-  }
-
-
+  // Set the texture for the sprite
   EditImage::sprite.setTexture(EditImage::texture);
-
 }
 
 // Reset the sprite and internal values to original
 void EditImage::reset() {
+  // Reset sprite
   EditImage::sprite.setScale(Vector2f(1, 1));
   EditImage::sprite.setRotation(0);
+
+  // Reset internal values
   EditImage::rotation = 0;
   EditImage::flipState[0] = 1;
   EditImage::flipState[1] = 1;
+
+  // Tell the user that it reset
   EditImage::message.setString("Reset!");
 }
 
@@ -196,28 +195,27 @@ void EditImage::draw(RenderWindow &window) {
 
 // Rotate the image relative to where it is currently
 void EditImage::rotate(const float &degrees)  {
-  EditImage::sprite.rotate(degrees);
-  EditImage::rotation = EditImage::sprite.getRotation();
-  EditImage::updateRText();
+  EditImage::sprite.rotate(degrees); // Rotate the sprite
+  EditImage::rotation = EditImage::sprite.getRotation(); // Get the new absolute rotation
+  EditImage::updateRText(); // Update the displayed rotation value
 }
 
 // Set the rotation of the image relative to zero degrees
 void EditImage::setRotation(const float &degrees) {
-  EditImage::sprite.setRotation(degrees);
-  EditImage::rotation = EditImage::sprite.getRotation();
-  EditImage::updateRText();
+  EditImage::sprite.setRotation(degrees); // Rotate the sprite
+  EditImage::rotation = EditImage::sprite.getRotation(); // Get the new absolute rotation
+  EditImage::updateRText(); // Update the displayed rotation value
 }
 
 // Actually move pixels around to rotate the image 90 degrees
 void EditImage::rotate90() {
-  cout << "Rotate90" << endl;
 
+  // Loop through the image vector
   for (unsigned int y = 0; y < EditImage::height; y++) {
     for (unsigned int x = 0; x < EditImage::width; x++) {
-      // THIS WORKED THE FIRST TRY!!!!!!!!!!!!!!!! (On a square image)
       EditImage::writePixel(
-        4 * (y * EditImage::width + x),
-        4 * (EditImage::height - y - 1 + EditImage::height * x)
+        4 * (y * EditImage::width + x), // Original position
+        4 * (EditImage::height - y - 1 + EditImage::height * x) // New position
       );
     }
   }
@@ -227,7 +225,7 @@ void EditImage::rotate90() {
   EditImage::height = EditImage::width;
   EditImage::width = temp;
   
-  // Set the read vector equal to the write vector so we can work on the newly modified image
+  // Set the read vector equal to the write vector so it can work on the newly modified image
   EditImage::read = EditImage::write;
 }
 
@@ -240,7 +238,7 @@ void EditImage::calcRotate() {
     }
   }
 
-  // Set the read vector equal to the write vector so we can work on the newly modified image
+  // Set the read vector equal to the write vector so it can work on the newly modified image
   EditImage::read = EditImage::write;
 }
 
@@ -255,36 +253,46 @@ void EditImage::flip(const string &direction) {
     EditImage::flipState[1] = EditImage::flipState[1] == 1 ? -1 : 1;
   }
 
-  // Use scale to mirror the displayed image appropriately
+  // Use scale to mirror the sprite appropriately
   EditImage::sprite.setScale(EditImage::flipState[0], EditImage::flipState[1]);
 }
 
 // Actually do the flipping based on flipstate
 void EditImage::calcFlip() {
+  // Flip horizontally
   if (EditImage::flipState[0] == -1) {
+    // Loop through the image vector
     for (unsigned int y = 0; y < EditImage::height; y++) {
       for (unsigned int x = 0; x < EditImage::width; x++) {
-        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * (y * EditImage::width + (EditImage::width - x - 1)));
+        EditImage::writePixel(
+          4 * (y * EditImage::width + x), // Old position
+          4 * (y * EditImage::width + (EditImage::width - x - 1)) // New position - reverse x
+        );
       }
     }
-    // Set the read vector equal to the write vector so we can work on the newly modified image
+    // Set the read vector equal to the write vector so it can work on the newly modified image
     EditImage::read = EditImage::write;
   }
+
+  // Flip vertically
   if (EditImage::flipState[1] == -1) {
     for (unsigned int y = 0; y < EditImage::height; y++) {
       for (unsigned int x = 0; x < EditImage::width; x++) {
-        EditImage::writePixel(4 * (y * EditImage::width + x), 4 * ((EditImage::height - y - 1) * EditImage::width + x));
+        EditImage::writePixel(
+          4 * (y * EditImage::width + x), // Old position
+          4 * ((EditImage::height - y - 1) * EditImage::width + x) // New position - reverse y
+        );
       }
     }
-    // Set the read vector equal to the write vector so we can work on the newly modified image
+    // Set the read vector equal to the write vector so it can work on the newly modified image
     EditImage::read = EditImage::write;
   }
 }
 
-// Crop the image
+// !Crop the image
 void EditImage::crop(Crop newCrop) {
 
-  // Set the read vector equal to the write vector so we can work on the newly modified image
+  // Set the read vector equal to the write vector so it can work on the newly modified image
   EditImage::read = EditImage::write;
 }
 
@@ -292,15 +300,13 @@ void EditImage::crop(Crop newCrop) {
 bool EditImage::save(string newFilename) {
   EditImage::message.setString("Saving..."); // Can't see it with small images, might be able to with larger images
 
-  //Only actually move the pixels when saving
-
   // Reset everything to the original image (These only change when you save anyway)
   EditImage::read = EditImage::original;
   EditImage::write = EditImage::original;
   EditImage::width = EditImage::originalWidth;
   EditImage::height = EditImage::originalHeight;
 
-  // Then do transforms
+  // Then do transforms - only actually move the pixels when saving
   EditImage::calcFlip();
   EditImage::calcRotate();
 
@@ -313,21 +319,20 @@ bool EditImage::save(string newFilename) {
   // fopen needs a char array instead of a C++ string
   const char* newFilePointer = &newFilename[0];
 
-  // https://www.cplusplus.com/reference/cstdio/fopen/
   // wb = write binary
   EditImage::newImage = fopen(newFilePointer, "wb");
 
   
   // check for an error
   if ( !EditImage::newImage ) {
-    cerr << "Error opening output file";
+    EditImage::message.setString("Error opening output file.");
     return false;
   }
 
   // Clear the buffer
   EditImage::buffer.clear();
 
-  // Encode the image into the buffer
+  // Encode the image into the buffer with lodepng
   lodepng::encode(EditImage::buffer, EditImage::read, EditImage::width, EditImage::height);
 
   // Write the image to file
@@ -341,8 +346,8 @@ bool EditImage::save(string newFilename) {
     cerr << "Fail. only wrote " << written << " elements out of " << EditImage::buffer.size();
   }
 
+  // Close the file
   fclose(EditImage::newImage);
-  cout << "Saved!" << endl;
 
   return true;
 }
