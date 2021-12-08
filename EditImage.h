@@ -46,7 +46,7 @@ private:
 
   void writePixel(unsigned int from, unsigned int to); // Write a pixel from the read vector to the write vector at the positions specified
   void rotate90(); // Rotate the image 90 degrees
-  void updateRText(); // Update the rotation text
+  void updateStateText(); // Update the text indicating the current state of the image
   void makeSprite(); // Create a sprite to display the image
 
   void calcRotate(); // Calculate the rotation and actually move pixels

@@ -41,7 +41,7 @@ void EditImage::GUISetUp() {
   EditImage::font.loadFromFile("data/arial.ttf");
 
   // Set up the rotation text
-  EditImage::updateRText();
+  EditImage::updateStateText();
   EditImage::rotationText.setFillColor(Color::Black);
   EditImage::rotationText.setFont(EditImage::font);
 
@@ -136,8 +136,11 @@ bool EditImage::readFile(const string& filename) {
     // Only set the object filename once the read has succeeded
     EditImage::filename = filename;
 
-    // And make a sprite to display the image
+    // Make a sprite to display the image
     EditImage::makeSprite();
+
+    // Tell the user
+    EditImage::message.setString("Loaded " + filename);
   }
   else {
     EditImage::message.setString("That file type is not supported. The previous file is still loaded.");
@@ -151,8 +154,12 @@ bool EditImage::readFile(const string& filename) {
 }
 
 // Update the displayed rotation value
-void EditImage::updateRText() {
-  EditImage::rotationText.setString("Rotation: " + to_string((int)EditImage::rotation) + char(176));
+void EditImage::updateStateText() {
+  EditImage::rotationText.setString(
+    "Rotation: " + to_string((int)EditImage::rotation) + char(176) + 
+    (EditImage::flipState[0] == -1 ? ", flipped horizontally" : "") + 
+    (EditImage::flipState[1] == -1 ? ", flipped vertically" : "")
+  );
 }
 
 // Make a sprite to display the image
@@ -186,6 +193,7 @@ void EditImage::reset() {
 
   // Tell the user that it reset
   EditImage::message.setString("Reset!");
+  EditImage::updateStateText();
 }
 
 // Draw the image sprite and stuff in the window
@@ -200,19 +208,19 @@ void EditImage::draw(RenderWindow &window) {
 void EditImage::rotate(const float &degrees)  {
   EditImage::sprite.rotate(degrees); // Rotate the sprite
   EditImage::rotation = EditImage::sprite.getRotation(); // Get the new absolute rotation
-  EditImage::updateRText(); // Update the displayed rotation value
+  EditImage::updateStateText(); // Update the displayed rotation value
 }
 
 // Set the rotation of the image relative to zero degrees
 void EditImage::setRotation(const float &degrees) {
   EditImage::sprite.setRotation(degrees); // Rotate the sprite
   EditImage::rotation = EditImage::sprite.getRotation(); // Get the new absolute rotation
-  EditImage::updateRText(); // Update the displayed rotation value
+  EditImage::updateStateText(); // Update the displayed rotation value
+  EditImage::message.setString("Rotated to " + to_string((int)EditImage::rotation) + " degrees!");
 }
 
 // Actually move pixels around to rotate the image 90 degrees
 void EditImage::rotate90() {
-
   // Loop through the image vector
   for (unsigned int y = 0; y < EditImage::height; y++) {
     for (unsigned int x = 0; x < EditImage::width; x++) {
@@ -250,11 +258,18 @@ void EditImage::flip(const string &direction) {
   // Mark as flipped horizontally
   if (direction == "h") {
     EditImage::flipState[0] = EditImage::flipState[0] == 1 ? -1 : 1;
+    // Tell the user
+    EditImage::message.setString("Flipped horizontally!");
   }
   // Mark as flipped vertically
   else if (direction == "v") {
     EditImage::flipState[1] = EditImage::flipState[1] == 1 ? -1 : 1;
+    // Tell the user
+    EditImage::message.setString("Flipped vertically!");
   }
+
+  // Display the changes in text
+  EditImage::updateStateText();
 
   // Use scale to mirror the sprite appropriately
   EditImage::sprite.setScale(EditImage::flipState[0], EditImage::flipState[1]);
