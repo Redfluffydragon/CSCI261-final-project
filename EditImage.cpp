@@ -83,7 +83,7 @@ bool EditImage::readFile(const string& filename) {
 
   // Find the file extension of the file
   // Get a 3-character substr because the largest file it cares about should only be 3 characters long
-  EditImage::fileType = filename.substr(filename.find(".") + 1, 3);
+  EditImage::fileType = filename.substr(filename.find('.') + 1, 3);
 
   // only support files that end in .png or .PNG
   if (EditImage::fileType == "png" || EditImage::fileType == "PNG") {
