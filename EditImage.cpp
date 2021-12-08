@@ -118,6 +118,11 @@ bool EditImage::readFile(const string& filename) {
     //Get the size of the image data in bytes
     EditImage::size = upng_get_size(upng);
 
+    // Clear all vectors (in case of loading a new file)
+    EditImage::original.clear();
+    EditImage::write.clear();
+    EditImage::read.clear();
+
     // Transfer into a vector so it can be a member of the object
     // !https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
     EditImage::original.insert(EditImage::original.end(), &getBuffer[0], &getBuffer[EditImage::size]);
@@ -129,7 +134,10 @@ bool EditImage::readFile(const string& filename) {
     // Now that it's in a vector it don't need the char array anymore, so free it from memory
     upng_free(upng);
 
-    // Now make a sprite to display the image
+    // Only set the object filename once the read has succeeded
+    EditImage::filename = filename;
+
+    // And make a sprite to display the image
     EditImage::makeSprite();
   }
   else {
@@ -140,8 +148,6 @@ bool EditImage::readFile(const string& filename) {
   // close the file
   imageFile.close();
 
-  // Only set the object filename once the read has succeeded
-  EditImage::filename = filename;
   return true;
 }
 
