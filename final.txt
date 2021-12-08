@@ -1,0 +1,57 @@
+Kai-Shen Deru
+CSCI261 Section C
+
+Almost-Useless Image Editor
+
+Project description:
+    Create an image editor that can flip images vertically and horizontally, and rotate them in 90 degree increments. The user will be able to reset the image, pick a new image file, and save the edited images to a new file. The editor only supports png images.
+
+Program documentation:
+
+How to use:
+    The program should start with a default image already loaded. You can rotate the image by clicking the cyan buttons to the left of the image, and flip the image horizontally or vertically by pushing the "H" or "V" keys. Save the edited image by clicking the save button or pressing the "S" key. It will save the image to a new file, but if you save again, it will write over the new save file with no warning.
+
+    Choose a new file by clicking the Choose file button and typing a new file path/file name in the popup window. Pressing enter will make the program try to open the file you specified, but it will tell you if it cannot open the file or if the file type is not supported.
+
+Extending this program:
+
+    I think the comments explain things pretty well, but basically all the image editing logic is in the image class, and all the getting user input parts are in main. Buttons only draw themselves and check if coordinates are within their bounds. The actual button click checking is in main.
+
+Features to add (that I didn't have time for):
+ * Crop functionality
+     Not sure how to implement this.
+
+ * Arbitrary rotation (rotate to any angle, not just in increments of 90 degrees)
+     I think everything is in place for this, it's just really complicated math (or at least too complicated for me)
+
+ * Prettier GUI
+     Maybe better colors, and better spacing between buttons? I just know it's pretty ugly right now.
+
+ * Better file selection system (maybe try to use native APIs?)
+     I'm not sure how to use Windows file APIs with SFML, but it would be nice.
+
+ * Support more image types
+     I would probably just use more libraries to decode the images into char vectors, and just make sure all the same functions still work
+
+ * Better buttons
+     Currently, the it only checks for MouseReleased events on buttons. This means that if you click somewhere, drag the cursor on top of a button, and release, it counts it as a button click. Ideally, the buttons would check that the mouse was pressed and released on the same button.
+
+
+Tests:
+
+  1. With the default image (loaded automatically when the program starts), click the "90 deg" button (or any of the rotation buttons) to rotate the image. The rotation in the top left corner and the image sprite should both update to reflect this. Click the save button to save it to a new file. The program should tell you where the image was saved to.
+
+  2. With the default image, type "V" or "H" to flip the image. The program should tell you when the image flips, and the image sprite should update. Then click the save button to save it to disk. The program should tell you where the file was saved to.
+
+  3. Click the "Choose file" button, type in a valid png file path/file name (if in the same folder). Try the included "test_1.png" file. You can backspace as necessary. Then tap the enter key. The image should load the image from the file path and display it for editing.
+
+  4. Click the "Choose file" button, type in an invalid png file path/file name (if in the same folder). Then tap the enter key. The program should tell you that it couldn't load the new file, and keep whatever image was loaded last.
+
+  5. Do any number of edits, then click the Reset button. The image sprite should reset and the program should tell you that it reset.
+
+
+Reflections:
+
+    I learned quite a bit about SFML from this project, like how to open a second window, and how to get text input. I also learned how to make the graphics not stretch when the window is resized, and how to set the window icon and change the cursor. The hardest part of this project was getting the image decoding/encoding working, and I ended up using libraries for that part. (I still wrote all the code for the file input and output). Simply reading the image files was pretty challenging as well, becuase I didn't realize I needed to use binary mode for a long time. 
+
+    If I were to do another project, I would use a graphics library that made it easier to do user interaction. Buttons and text input and such are way too hard in SFML. I made buttons for this project, but they're really bad. 
