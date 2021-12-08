@@ -25,8 +25,7 @@ EditImage::EditImage(const string &inputFilename) {
 
 // Default constructor that loads a default image
 EditImage::EditImage() {
-  // !Default file
-  EditImage::filename = "data/tearTreeSmall.png";
+  EditImage::filename = "default_image.png";
   
   // Try to read the file (readFile does error handling) with EditImage::message
   EditImage::readFile(EditImage::filename);
