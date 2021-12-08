@@ -138,9 +138,9 @@ bool EditImage::readFile(const string& filename) {
   return true;
 }
 
-// Update the displayed rotation
+// Update the displayed rotation value
 void EditImage::updateRText() {
-  EditImage::rotationText.setString("Rotation: " + to_string(EditImage::rotation) + char(176));
+  EditImage::rotationText.setString("Rotation: " + to_string((int)EditImage::rotation) + char(176));
 }
 
 // Make a sprite to display the image
@@ -233,16 +233,10 @@ void EditImage::rotate90() {
 
 // Move pixels and calculate the rotation of the image
 void EditImage::calcRotate() {
+  // Rotate 90 degrees the correct amount of times
   if ((int)EditImage::rotation % 90 == 0) {
     for (int i = 0; i < (int)EditImage::rotation / 90; i++) {
       EditImage::rotate90();
-    }
-  }
-  else {
-    for (unsigned int y = 0; y < EditImage::height; y++) {
-      for (unsigned int x = 0; x < EditImage::width; x++) {
-        EditImage::writePixel(4 * (y * EditImage::width + x), sin(x));
-      }
     }
   }
 

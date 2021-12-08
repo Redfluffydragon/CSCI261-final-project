@@ -30,9 +30,6 @@ int main() {
     // If the mouse is over a button or not (for changing the cursor)
     bool overButton = false;
 
-    // Whether or not the R key is pressed, for rotating the image
-    bool rDown = false;
-
     // The starting point of the mouse to calculate rotation
     Vector2i startingPoint;
 
@@ -125,11 +122,6 @@ int main() {
 
             }
             else if ( event.type == Event::MouseMoved ) { // Check if cursor is over a button
-              if (rDown) {
-                image.rotate(float(Mouse::getPosition().x - startingPoint.x) / 3);
-                startingPoint = Mouse::getPosition();
-              }
-
               overButton = false;
               for (int i = 0; i < 4; i++) {
                 if (rButtons[i].isWithin(Mouse::getPosition(window))) {
@@ -203,7 +195,6 @@ int main() {
                     }
                   }
                 }
-                // ! GET FILE PATH/NAME
               }
             }
             else if ( event.type == Event::KeyPressed) {
@@ -215,15 +206,6 @@ int main() {
               }
               else if (event.key.code == Keyboard::S) {
                 image.save("");
-              }
-              else if (event.key.code == Keyboard::R) {
-                startingPoint = Mouse::getPosition();
-                rDown = true;
-              }
-            }
-            else if (event.type == Event::KeyReleased) {
-              if (event.key.code == Keyboard::R) {
-                rDown = false;
               }
             }
         }
