@@ -3,10 +3,12 @@
  * Author: KAI-SHEN DERU
  * 
  * Resources used (Office Hours, Tutoring, Other Students, etc & in what capacity):
- *
- * !More complete description here...
- * https://github.com/lvandeve/lodepng/blob/master/examples/example_encode.cpp
- * https://github.com/elanthis/upng
+ *    None in this file
+ * 
+ * Open a window with a default image, and let the user edit that image and save the edited image to disk. 
+ * The user can also open another image and edit that.
+ * This program only supports PNGs.
+ * 
  */
 
 // The include section adds extra definitions from the C++ standard library.
@@ -22,7 +24,7 @@ using namespace std;
 using namespace sf;
 
 // Define any constants below this comment.
-const int WINDOW_SIZE = 850;
+const int WINDOW_SIZE = 850; // Window width and height
 
 int main() {
 

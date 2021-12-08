@@ -90,7 +90,6 @@ bool EditImage::readFile(const string &filename) {
         // read the image
 
         // Use an istreambuf_iterator to get read all the image data correctly
-        // !https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
         EditImage::buffer = vector<unsigned char>((istreambuf_iterator<char>(imageFile)), istreambuf_iterator<char>());
 
         // Create a pointer to the byte array behind the buffer vector
@@ -121,7 +120,6 @@ bool EditImage::readFile(const string &filename) {
         EditImage::read.clear();
 
         // Transfer into a vector so it can be a member of the object
-        // !https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
         EditImage::original.insert(EditImage::original.end(), &getBuffer[0], &getBuffer[EditImage::size]);
 
         // Also transfer into the read and write vectors so they're the right size
