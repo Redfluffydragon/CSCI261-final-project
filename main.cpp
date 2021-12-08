@@ -43,7 +43,7 @@ int main() {
     Button saveBtn("Save", Vector2f(350, 540), Color::Green); // Save button
 
     // Create main window
-    RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
+    RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Almost-Useless Image Editor" );
 
     // Window for choosing a file
     RenderWindow fileWindow;
