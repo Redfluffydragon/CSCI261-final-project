@@ -21,7 +21,7 @@ using namespace std;
 using  namespace sf;
 
 // Define any constants below this comment.
-const int WINDOW_SIZE = 840;
+const int WINDOW_SIZE = 850;
 
 int main() {
 
@@ -38,15 +38,29 @@ int main() {
 
     Button rButtons[4]{
       Button("0 deg", Vector2f(0, 40), Color::Cyan),
-      Button("90 deg", Vector2f(0, 110), Color::Cyan),
-      Button("180 deg", Vector2f(0, 180), Color::Cyan),
-      Button("270 deg", Vector2f(0, 250), Color::Cyan),
+      Button("90 deg", Vector2f(0, 115), Color::Cyan),
+      Button("180 deg", Vector2f(0, 190), Color::Cyan),
+      Button("270 deg", Vector2f(0, 265), Color::Cyan),
     };
 
-    Button resetBtn("Reset", Vector2f(350, 400), Color::Red);
+    Button fileBtn("Choose file", Vector2f(350, 400), Color(112, 112, 112));
+    Button resetBtn("Reset", Vector2f(350, 470), Color::Red);
+    Button saveBtn("Save", Vector2f(350, 540), Color::Green);
 
     RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
+    RenderWindow fileWindow;
+    string filename = "";
 
+    // Load arial font from file
+    Font arial;
+    arial.loadFromFile("data/arial.ttf");
+
+    // Window icon
+    Image icon;
+    icon.loadFromFile("FP_icon.png");
+    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
+    // Get hand cursor and arrow (default) cursor for buttons
     Cursor handCursor;
     if (!handCursor.loadFromSystem(Cursor::Hand)) {
       cerr << "Failed to load hand cursor" << endl;
@@ -67,14 +81,21 @@ int main() {
         //  ADD ALL OF OUR DRAWING BELOW HERE
         //****************************************
         
+        if (!filename.empty()) { // If filename has a value
+          image.setFile(filename); // Set it as the new file for the image
+          filename = ""; // Clear filename
+        }
+
         // window.setMouseCursor(cursor);
         image.draw(window);
 
-        // Buttons
+        // Draw buttons
         for (int i = 0; i < 4; i++) {
           rButtons[i].draw(window);
         }
         resetBtn.draw(window);
+        fileBtn.draw(window);
+        saveBtn.draw(window);
 
         // Make the cursor a hand when you hover over buttons
         overButton ?
@@ -103,7 +124,7 @@ int main() {
             else if ( event.type == Event::MouseButtonPressed ) {
 
             }
-            else if ( event.type == Event::MouseMoved ) {
+            else if ( event.type == Event::MouseMoved ) { // Check if cursor is over a button
               if (rDown) {
                 image.rotate(float(Mouse::getPosition().x - startingPoint.x) / 3);
                 startingPoint = Mouse::getPosition();
@@ -115,7 +136,11 @@ int main() {
                   overButton = true;
                 }
               }
-              if (resetBtn.isWithin(Mouse::getPosition(window))) {
+              if (
+                resetBtn.isWithin(Mouse::getPosition(window)) ||
+                fileBtn.isWithin(Mouse::getPosition(window)) ||
+                saveBtn.isWithin(Mouse::getPosition(window))
+              ) {
                 overButton = true;
               }
 
@@ -128,6 +153,57 @@ int main() {
               }
               if (resetBtn.isWithin(Mouse::getPosition(window))) {
                 image.reset();
+              }
+              else if (saveBtn.isWithin(Mouse::getPosition(window))) {
+                image.save("");
+              }
+              else if (fileBtn.isWithin(Mouse::getPosition(window))) {
+                fileWindow.create( VideoMode(750, 300), "Choose file");
+                fileWindow.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
+                Text message("Type a file path and type enter or close this window\nto stick with the already loaded default image.", arial);
+                message.setFillColor(Color::Black);
+                message.setPosition(Vector2f(10, 10));
+
+                Text showFilename(filename, arial);
+                showFilename.setFillColor(Color::Black);
+                showFilename.setPosition(Vector2f(10, 100));
+
+                // Hang the main window with the file select window - I think this is fine?
+                while(fileWindow.isOpen()) {
+
+                  fileWindow.clear( Color::White );           // clear the contents of the old frame
+
+                  fileWindow.draw(message);
+                  fileWindow.draw(showFilename);
+                  
+                  fileWindow.display();
+
+                  Event fileEvent;
+                  while (fileWindow.pollEvent(fileEvent)) {
+
+                    if( fileEvent.type == Event::Closed ) { // if event type is a closed event
+                      fileWindow.close();
+                    }
+                    else if (fileEvent.type == Event::TextEntered) {
+                      if (fileEvent.text.unicode < 128) {
+                        if (fileEvent.text.unicode == 8) { // Backspace
+                          if(!filename.empty()) {
+                            filename.pop_back();
+                          }
+                        }
+                        else if (fileEvent.text.unicode == 13) { // Enter
+                          fileWindow.close();
+                        }
+                        else { // Typeable characters (I think)
+                          filename += (char)fileEvent.text.unicode;
+                        }
+                        showFilename.setString(filename);
+                      }
+                    }
+                  }
+                }
+                // ! GET FILE PATH/NAME
               }
             }
             else if ( event.type == Event::KeyPressed) {

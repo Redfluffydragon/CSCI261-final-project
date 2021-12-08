@@ -54,11 +54,12 @@ private:
 
   void calcRotate();
   void calcFlip();
+  bool readFile(const string& filename);
+  void GUISetUp();
 public:
   EditImage(const string &);
   EditImage();
-  void getFilename(); // Get a filename to open
-  bool readFile();
+  void setFile(const string& filename);
   void draw(RenderWindow &window);
   void rotate(const float &degrees);
   void setRotation(const float &degrees);

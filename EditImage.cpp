@@ -15,26 +15,30 @@ using namespace sf;
 
 // Parameterized constructor that takes a file name
 EditImage::EditImage(const string &inputFilename) {
-  filename = inputFilename;
+  // Set the internal file name to the input file name
+  EditImage::filename = inputFilename;
 
-  if (!EditImage::readFile()) {
-    cout << "Failed to open file";
-  }
+  // Try to read the file (readFile does error handling) with EditImage::message
+  EditImage::readFile(EditImage::filename);
 
+  // Set up the GUI elements
+  EditImage::GUISetUp();
 }
 
-// Default constructor that gets a file name 
+// Default constructor that loads a default image
 EditImage::EditImage() {
-  // getFilename();
-  // filename = "data/wallpaper.ppm";
-  // filename = "data/pack_icon.png";
-  filename = "data/tearTreeSmall.png";
+  // Default file
+  EditImage::filename = "data/tearTreeSmall.png";
   
-  if (!EditImage::readFile()) {
-    cout << "Failed to open file";
-  }
+  // Try to read the file (readFile does error handling) with EditImage::message
+  EditImage::readFile(EditImage::filename);
 
-  // Set up GUI elements
+  // Set up the GUI elements
+  EditImage::GUISetUp();
+}
+
+// Set up GUI elements
+void EditImage::GUISetUp() {
   EditImage::font.loadFromFile("data/arial.ttf");
 
   EditImage::updateRText();
@@ -43,13 +47,18 @@ EditImage::EditImage() {
 
   EditImage::message.setFillColor(Color::Black);
   EditImage::message.setFont(EditImage::font);
-  EditImage::message.setPosition(Vector2f(100, 400));
+  EditImage::message.setPosition(Vector2f(10, 350));
 
   EditImage::instructions.setString(
-    "Press V or H to flip the image horizontally or vertically.\nClick the buttons to rotate the image.\nPress S to save the image.");
+    "Press V or H to flip the image horizontally or vertically.\nClick the buttons to rotate the image.\nPress S to save the image.\nOnly supports PNG images.");
   EditImage::instructions.setFillColor(Color::Black);
   EditImage::instructions.setFont(EditImage::font);
-  EditImage::instructions.setPosition(Vector2f(50, 600));
+  EditImage::instructions.setPosition(Vector2f(50, 630));
+}
+
+// Change to a new image file
+void EditImage::setFile(const string& filename) {
+  EditImage::readFile(filename);
 }
 
 // Write a pixel (four bytes/chars) from the location in read to the location in write
@@ -60,55 +69,21 @@ void EditImage::writePixel(unsigned int from, unsigned int to) {
   EditImage::write.at(to + 3) = EditImage::read.at(from + 3);
 }
 
-// Get a file name to open
-void EditImage::getFilename() {
-  cin >> EditImage::filename; // ? Check for errors? use getline for file names with spaces?
-}
-
 // Read an image from file into a vector
-bool EditImage::readFile() {
-  // read the image
-
-  // declare ifstream object and open the file
-  ifstream imageFile(filename, ios_base::binary);
+bool EditImage::readFile(const string& filename) {
+  // declare ifstream object and open the file in binary read mode so it can read all the image data correctly
+  ifstream imageFile(EditImage::filename, ios_base::binary);
   
   // check for an error
   if ( imageFile.fail() ) {
+    EditImage::message.setString("Could not load new file. The previous file is still loaded.");
     return false;
   }
 
-  EditImage::fileType = filename.substr(filename.find(".") + 1, filename.size() - 1);
-  cout << "Opened " << fileType << " file" << endl;
+  EditImage::fileType = EditImage::filename.substr(EditImage::filename.find(".") + 1, EditImage::filename.size() - 1);
+  cout << "Opened " << EditImage::fileType << " file" << endl;
 
-  if (EditImage::fileType == "ppm") {
-    string imageType; // To read the type of image from the image file
-    int maxValue; // To read the other header data
-
-    imageFile >> imageType;
-
-    // Check if it's the right image type
-    if (imageType != "P3") {
-      cerr << "Sorry, that file type isn't supported.";
-      return false;
-    }
-
-    // Read in the rest of the header
-    imageFile >> EditImage::height >> EditImage::width >> maxValue;
-
-
-    // Read in all the pixels
-    int red, blue, green;
-    for (int i = 0; i < EditImage::width; i++) {
-      for (int j = 0; j < EditImage::height; j++) {
-        imageFile >> red >> green >> blue;
-        // EditImage::image1.emplace_back(red, green, blue);
-        /* EditImage::image1.push_back(green);
-        EditImage::image1.push_back(blue);
-        EditImage::image1.push_back(255); // Fake alpha channel */
-      }
-    }
-  }
-  else if (EditImage::fileType == "png") {
+  if (EditImage::fileType == "png") {
     // read the image
 
     // https://www.reddit.com/r/cpp_questions/comments/m93tjb/certain_bytes_are_just_skipped_while_reading/
@@ -146,14 +121,20 @@ bool EditImage::readFile() {
 
     // Now that it's in a vector we don't need the char array anymore, so free it from memory
     upng_free(upng);
+
+    // Now make a sprite to display the image
+    EditImage::makeSprite();
+  }
+  else {
+    EditImage::message.setString("That file type is not supported. The previous file is still loaded.");
+    return false;
   }
 
   // close the file
   imageFile.close();
 
-  // Now make a sprite to display the image
-  EditImage::makeSprite();
-
+  // Only set the object filename once the read has succeeded
+  EditImage::filename = filename;
   return true;
 }
 
@@ -315,11 +296,11 @@ void EditImage::crop(Crop newCrop) {
 
 // Save the image to file
 bool EditImage::save(string newFilename) {
-  EditImage::message.setString("Saving...");
+  EditImage::message.setString("Saving..."); // Can't see it with small images, might be able to with larger images
 
   //Only actually move the pixels when saving
 
-  // Reset everything to the original image
+  // Reset everything to the original image (These only change when you save anyway)
   EditImage::read = EditImage::original;
   EditImage::write = EditImage::original;
   EditImage::width = EditImage::originalWidth;
@@ -329,13 +310,18 @@ bool EditImage::save(string newFilename) {
   EditImage::calcFlip();
   EditImage::calcRotate();
 
+  // If the file name is empty, set it to the original file name + "_edited"
   if (newFilename.empty()) {
-    newFilename = "edited_" + EditImage::filename;
+    int lastDot = EditImage::filename.find_last_of(".");
+    newFilename = EditImage::filename.substr(0, lastDot) + "_edited" + EditImage::filename.substr(lastDot, EditImage::filename.size() - lastDot);
   }
+
+  // fopen needs a char array instead of a C++ string
+  const char* newFilePointer = &newFilename[0];
 
   // https://www.cplusplus.com/reference/cstdio/fopen/
   // wb = write binary
-  EditImage::newImage = fopen("edited_image.png", "wb");
+  EditImage::newImage = fopen(newFilePointer, "wb");
 
   
   // check for an error
@@ -354,10 +340,10 @@ bool EditImage::save(string newFilename) {
   // 1 is the size of one char
   int written = fwrite(&EditImage::buffer[0], 1, EditImage::buffer.size(), EditImage::newImage);
   if (written == EditImage::buffer.size()) {
-    EditImage::message.setString("Saved!");
+    EditImage::message.setString("Saved to " + newFilename);
   }
   else {
-    EditImage::message.setString("Saved incorrectly");
+    EditImage::message.setString("Saved incorrectly.");
     cerr << "Fail. only wrote " << written << " elements out of " << EditImage::buffer.size();
   }
 
