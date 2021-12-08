@@ -30,9 +30,7 @@ int main() {
     // If the mouse is over a button or not (for changing the cursor)
     bool overButton = false;
 
-    // The starting point of the mouse to calculate rotation
-    Vector2i startingPoint;
-
+    // Buttons for setting rotation
     Button rButtons[4]{
       Button("0 deg", Vector2f(0, 40), Color::Cyan),
       Button("90 deg", Vector2f(0, 115), Color::Cyan),
@@ -40,12 +38,17 @@ int main() {
       Button("270 deg", Vector2f(0, 265), Color::Cyan),
     };
 
-    Button fileBtn("Choose file", Vector2f(350, 400), Color(112, 112, 112));
-    Button resetBtn("Reset", Vector2f(350, 470), Color::Red);
-    Button saveBtn("Save", Vector2f(350, 540), Color::Green);
+    Button fileBtn("Choose file", Vector2f(350, 400), Color(112, 112, 112)); // Choose file button
+    Button resetBtn("Reset", Vector2f(350, 470), Color::Red); // Reset button
+    Button saveBtn("Save", Vector2f(350, 540), Color::Green); // Save button
 
+    // Create main window
     RenderWindow window( VideoMode(WINDOW_SIZE, WINDOW_SIZE), "Image editor" );
+
+    // Window for choosing a file
     RenderWindow fileWindow;
+
+    // String to hold the new file name
     string filename = "";
 
     // Load arial font from file
@@ -83,7 +86,7 @@ int main() {
           filename = ""; // Clear filename
         }
 
-        // window.setMouseCursor(cursor);
+        // Draw the image (also draws some associated GUI)
         image.draw(window);
 
         // Draw buttons
@@ -118,9 +121,6 @@ int main() {
               FloatRect visibleArea(0, 0, event.size.width, event.size.height);
               window.setView(View(visibleArea));
             }
-            else if ( event.type == Event::MouseButtonPressed ) {
-
-            }
             else if ( event.type == Event::MouseMoved ) { // Check if cursor is over a button
               overButton = false;
               for (int i = 0; i < 4; i++) {
@@ -135,7 +135,6 @@ int main() {
               ) {
                 overButton = true;
               }
-
             }
             else if ( event.type == Event::MouseButtonReleased ) {
               for (int i = 0; i < 4; i++) {
@@ -149,62 +148,78 @@ int main() {
               else if (saveBtn.isWithin(Mouse::getPosition(window))) {
                 image.save("");
               }
-              else if (fileBtn.isWithin(Mouse::getPosition(window))) {
+              else if (fileBtn.isWithin(Mouse::getPosition(window))) { // If choose file button is clicked
+                // Create a new file window
                 fileWindow.create( VideoMode(750, 300), "Choose file");
+                
+                // Set the file window icon
                 fileWindow.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
-                Text message("Type a file path and type enter or close this window\nto stick with the already loaded default image.", arial);
+                // New file informational message
+                Text message("Type a file path and type enter to load a new file.\nClose this window to keep the currently loaded image.\nYou won't be able to interact with the main window\nwhile this window is open.", arial);
                 message.setFillColor(Color::Black);
                 message.setPosition(Vector2f(10, 10));
 
-                Text showFilename(filename, arial);
+                // To show the typed in file name
+                Text showFilename("File name goes here (start typing)", arial);
                 showFilename.setFillColor(Color::Black);
-                showFilename.setPosition(Vector2f(10, 100));
+                showFilename.setPosition(Vector2f(10, 170));
 
                 // Hang the main window with the file select window - I think this is fine?
                 while(fileWindow.isOpen()) {
 
                   fileWindow.clear( Color::White );           // clear the contents of the old frame
 
+                  // Draw the informational message
                   fileWindow.draw(message);
+
+                  // Draw the new file name
                   fileWindow.draw(showFilename);
                   
+                  // Update the window
                   fileWindow.display();
 
+                  // Detect window events
                   Event fileEvent;
                   while (fileWindow.pollEvent(fileEvent)) {
 
                     if( fileEvent.type == Event::Closed ) { // if event type is a closed event
-                      fileWindow.close();
+                      filename = ""; // Reset the filename so it doesn't try to open a new file
+                      fileWindow.close(); // Close the window
                     }
-                    else if (fileEvent.type == Event::TextEntered) {
-                      if (fileEvent.text.unicode < 128) {
-                        if (fileEvent.text.unicode == 8) { // Backspace
-                          if(!filename.empty()) {
+                    else if (fileEvent.type == Event::Resized) { // Make it so things don't stretch when the window is resized
+                      FloatRect visibleArea(0, 0, fileEvent.size.width, fileEvent.size.height);
+                      fileWindow.setView(View(visibleArea));
+                    }
+                    else if (fileEvent.type == Event::TextEntered) { // If text is typed, add it to the file name for display
+                      if (fileEvent.text.unicode < 128) { // Only basic characters
+                        if (fileEvent.text.unicode == 8) { // Backspace removes the last character
+                          if(!filename.empty()) { // Only if there are any characters to remove
                             filename.pop_back();
                           }
                         }
-                        else if (fileEvent.text.unicode == 13) { // Enter
+                        else if (fileEvent.text.unicode == 13) { // Enter closes the window without resetting the file name, so it will try to load the new file
                           fileWindow.close();
                         }
                         else { // Typeable characters (I think)
                           filename += (char)fileEvent.text.unicode;
                         }
-                        showFilename.setString(filename);
+                        // If the filename has something, display it. Oterhwise, set it to the placeholder text again
+                        showFilename.setString(filename.empty() ? "File name goes here (start typing)" : filename);
                       }
                     }
                   }
                 }
               }
             }
-            else if ( event.type == Event::KeyPressed) {
+            else if ( event.type == Event::KeyPressed) { // Flip horizontally if h is pressed
               if (event.key.code == Keyboard::H) {
                 image.flip("h");
               }
-              else if (event.key.code == Keyboard::V) {
+              else if (event.key.code == Keyboard::V) { // Flip vertically if v is pressed
                 image.flip("v");
               }
-              else if (event.key.code == Keyboard::S) {
+              else if (event.key.code == Keyboard::S) { // Save if s is pressed
                 image.save("");
               }
             }
