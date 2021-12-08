@@ -42,31 +42,31 @@ private:
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
 
-  Text message;
-  Text rotationText;
-  Text instructions;
-  Font font;
+  Text message; // For displaying info for the user
+  Text rotationText; // For displaying the current rotation
+  Text instructions; // For displaying instructions
+  Font font; // For loading a font (Arial)
 
-  void writePixel(unsigned int from, unsigned int to);
-  void rotate90();
-  void updateRText();
-  void makeSprite();
+  void writePixel(unsigned int from, unsigned int to); // Write a pixel from the read vector to the write vector at the positions specified
+  void rotate90(); // Rotate the image 90 degrees
+  void updateRText(); // Update the rotation text
+  void makeSprite(); // Create a sprite to display the image
 
-  void calcRotate();
-  void calcFlip();
-  bool readFile(const string& filename);
-  void GUISetUp();
+  void calcRotate(); // Calculate the rotation and actually move pixels
+  void calcFlip(); // Calculate the flipping and actually move pixels
+  bool readFile(const string& filename); // Try to read a file into memory
+  void GUISetUp(); // Set up the GUI for the image editing
 public:
-  EditImage(const string &);
-  EditImage();
-  void setFile(const string& filename);
-  void draw(RenderWindow &window);
-  void rotate(const float &degrees);
-  void setRotation(const float &degrees);
-  void flip(const string &);
+  EditImage(const string &filename); // Paramterized constructor with file name
+  EditImage(); // Default constructor (loads default image)
+  void setFile(const string& filename); // Set a new filename to edit
+  void draw(RenderWindow &window); // Draw the image and GUI in the window
+  void rotate(const float &degrees); // Rotate the sprite and set the rotation data member of the image from where it is currently
+  void setRotation(const float &degrees); // Rotate the sprite and set the rotation data member of the image from zero
+  void flip(const string &); // Flip the sprite and mark for flipping later
   void crop(Crop newCrop);
-  void reset(); // Reset the image to original
-  bool save(string);
+  void reset(); // Reset the image and sprite to original
+  bool save(string); // Save the new image to file (this is where it does the actual image processing)
 };
 
 #endif

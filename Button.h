@@ -14,7 +14,7 @@ using namespace sf;
 class Button {
 private:
   Vector2f size; // Width and height of the rectangle. Calculated from the text size
-  Vector2f position; // Position of the rectangle
+  Vector2f position; // Position of the rectangle (top left corner)
   RectangleShape rect; // The rectangle to display
   Text text; // Button text object
   Font font; // Font - only does Arial
@@ -33,8 +33,8 @@ public:
   Button();
   Button(string text, Vector2f position, Color color);
 
-  void draw(RenderWindow &window);
-  bool isWithin(Vector2i mousePosition);
+  void draw(RenderWindow &window); // Draw the button in the window
+  bool isWithin(Vector2i mousePosition); // Check if the coordinates are inside the button
   
 };
 
