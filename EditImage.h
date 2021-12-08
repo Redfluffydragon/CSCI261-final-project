@@ -18,7 +18,6 @@ class EditImage
 {
 private:
   string filename; // The name of the file to open
-  vector<unsigned char> header; // The file header
   string fileType; //  The image file extension
 
   unsigned int height; // The height in pixels
@@ -57,7 +56,7 @@ private:
   bool readFile(const string& filename); // Try to read a file into memory
   void GUISetUp(); // Set up the GUI for the image editing
 public:
-  EditImage(const string &filename); // Paramterized constructor with file name
+  explicit EditImage(const string &filename); // Parameterized constructor with file name
   EditImage(); // Default constructor (loads default image)
   void setFile(const string& filename); // Set a new filename to edit
   void draw(RenderWindow &window); // Draw the image and GUI in the window

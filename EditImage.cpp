@@ -4,7 +4,6 @@
 #include <fstream> // For reading a writing to files
 #include <iostream> // For cin, cout
 #include <vector> // For vectors
-#include "math.h" // For pow
 #include "upng.h" // For PNG decoding
 
 using namespace std;
@@ -312,7 +311,7 @@ bool EditImage::save(string newFilename) {
 
   // If the file name is empty, set it to the original file name + "_edited"
   if (newFilename.empty()) {
-    int lastDot = EditImage::filename.find_last_of(".");
+    unsigned long long lastDot = EditImage::filename.find_last_of('.');
     newFilename = EditImage::filename.substr(0, lastDot) + "_edited" + EditImage::filename.substr(lastDot, EditImage::filename.size() - lastDot);
   }
 

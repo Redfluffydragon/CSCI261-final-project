@@ -14,7 +14,7 @@ Button::Button() {
 }
 
 // Makes a button that displays the given text, with approximately Button::padding space around the text in the rectangle
-Button::Button(string text, Vector2f position, Color color) {
+Button::Button(const string& text, Vector2f position, Color color) {
     Button::position = position; // Set position
 
     Button::font.loadFromFile("data/arial.ttf"); // Load Arial from file
@@ -41,7 +41,7 @@ void Button::draw(RenderWindow &window) {
 }
 
 // Check if the given coordinates are inside the button rect
-bool Button::isWithin(Vector2i mousePosition) {
+bool Button::isWithin(Vector2i mousePosition) const {
     return
         mousePosition.x >= Button::position.x &&
         mousePosition.x <= Button::position.x + Button::size.x &&

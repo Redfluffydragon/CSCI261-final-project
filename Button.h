@@ -31,10 +31,10 @@ public:
   void setColor(const Color &color);
 
   Button();
-  Button(string text, Vector2f position, Color color);
+  Button(const string& text, Vector2f position, Color color);
 
   void draw(RenderWindow &window); // Draw the button in the window
-  bool isWithin(Vector2i mousePosition); // Check if the coordinates are inside the button
+  bool isWithin(Vector2i mousePosition) const; // Check if the coordinates are inside the button
   
 };
 

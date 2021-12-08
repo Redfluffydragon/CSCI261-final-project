@@ -49,7 +49,7 @@ int main() {
     RenderWindow fileWindow;
 
     // String to hold the new file name
-    string filename = "";
+    string filename;
 
     // Load arial font from file
     Font arial;
@@ -90,8 +90,8 @@ int main() {
         image.draw(window);
 
         // Draw buttons
-        for (int i = 0; i < 4; i++) {
-          rButtons[i].draw(window);
+        for (auto & rButton : rButtons) {
+          rButton.draw(window);
         }
         resetBtn.draw(window);
         fileBtn.draw(window);
@@ -111,7 +111,7 @@ int main() {
         //****************************************
         // HANDLE EVENTS BELOW HERE
         //****************************************
-        Event event;
+        Event event{};
         while( window.pollEvent(event) ) {      // ask the window if any events occurred
             if( event.type == Event::Closed ) { // if event type is a closed event
                 // i.e. they clicked the X on the window
@@ -123,8 +123,8 @@ int main() {
             }
             else if ( event.type == Event::MouseMoved ) { // Check if cursor is over a button
               overButton = false;
-              for (int i = 0; i < 4; i++) {
-                if (rButtons[i].isWithin(Mouse::getPosition(window))) {
+              for (auto & rButton : rButtons) {
+                if (rButton.isWithin(Mouse::getPosition(window))) {
                   overButton = true;
                 }
               }
@@ -180,7 +180,7 @@ int main() {
                   fileWindow.display();
 
                   // Detect window events
-                  Event fileEvent;
+                  Event fileEvent{};
                   while (fileWindow.pollEvent(fileEvent)) {
 
                     if( fileEvent.type == Event::Closed ) { // if event type is a closed event
