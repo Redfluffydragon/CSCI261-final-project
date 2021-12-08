@@ -1,5 +1,4 @@
 #include "EditImage.h" // Header file for this class
-#include "Crop.h" // Custom crop struct
 #include <string> // For strings
 #include <fstream> // For reading a writing to files
 #include <iostream> // For cin, cout
@@ -158,8 +157,7 @@ void EditImage::updateRText() {
 
 // Make a sprite to display the image
 void EditImage::makeSprite() {
-
-  // Make a new sprite
+  // Make a new sprite (Clear any old stuff out)
   EditImage::sprite = Sprite();
 
   // Set origin to the center for rotation
@@ -292,13 +290,6 @@ void EditImage::calcFlip() {
     // Set the read vector equal to the write vector so it can work on the newly modified image
     EditImage::read = EditImage::write;
   }
-}
-
-// !Crop the image
-void EditImage::crop(Crop newCrop) {
-
-  // Set the read vector equal to the write vector so it can work on the newly modified image
-  EditImage::read = EditImage::write;
 }
 
 // Save the image to file

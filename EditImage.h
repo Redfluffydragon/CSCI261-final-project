@@ -4,7 +4,6 @@
 
 #include <string>
 #include <vector>
-#include "Crop.h"
 #include "upng.h" // For PNG decoding
 #include "lodepng.h" // For PNG encoding
 
@@ -25,7 +24,6 @@ private:
   unsigned int size; // The size of the pixel array
 
   double rotation = 0.0; // The current rotation
-  Crop currentCrop; // The current crop
   int flipState[2] = {1, 1}; // The current horizontal and vertical flip
 
   vector<unsigned char> buffer; // To get the image data to pass to upng
@@ -36,7 +34,7 @@ private:
   vector<unsigned char> read; // A vector holding a version of the current image to read from
   vector<unsigned char> write; // A vector to write the edited image to 
 
-  FILE* newImage;
+  FILE* newImage; // For writing the edited image to file
 
   Sprite sprite; // For displaying the image
   Texture texture; // For displaying the image
@@ -63,7 +61,6 @@ public:
   void rotate(const float &degrees); // Rotate the sprite and set the rotation data member of the image from where it is currently
   void setRotation(const float &degrees); // Rotate the sprite and set the rotation data member of the image from zero
   void flip(const string &); // Flip the sprite and mark for flipping later
-  void crop(Crop newCrop);
   void reset(); // Reset the image and sprite to original
   bool save(string); // Save the new image to file (this is where it does the actual image processing)
 };

@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 set_source_files_properties(filename.c PROPERTIES LANGUAGE CXX )
 
-add_executable(Final_Project main.cpp EditImage.cpp EditImage.h Crop.h upng.cpp upng.h lodepng.cpp lodepng.h Button.cpp Button.h)
+add_executable(Final_Project main.cpp EditImage.cpp EditImage.h upng.cpp upng.h lodepng.cpp lodepng.h Button.cpp Button.h)
 target_link_libraries(Final_Project sfml-audio sfml-graphics sfml-system sfml-window sfml-network sfml-main)
 
 # Copy single files
